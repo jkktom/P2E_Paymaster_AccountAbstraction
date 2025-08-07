@@ -17,12 +17,13 @@ This file documents the final database design using JPA entities with proper ID 
 
 ## JPA Entity Design
 
-### User Entity (UUID Primary Key)
+### User Entity (UUID Primary Key with Role-Based Access Control)
 ```java
 @Entity
 @Table(name = "users", indexes = {
     @Index(name = "idx_users_google_id", columnList = "googleId"),
-    @Index(name = "idx_users_wallet_address", columnList = "smartWalletAddress")
+    @Index(name = "idx_users_wallet_address", columnList = "smartWalletAddress"),
+    @Index(name = "idx_users_role", columnList = "roleId")
 })
 public class User {
     @Id
@@ -42,6 +43,9 @@ public class User {
     
     @Column(name = "smart_wallet_address", unique = true, nullable = false, length = 42)
     private String smartWalletAddress;
+    
+    @Column(name = "role_id", nullable = false)
+    private Byte roleId = 2; // Default to USER role
     
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -100,6 +104,24 @@ public class PointSource {
     private String name; // "TASK_COMPLETION", "EVENT_REWARD", "ADMIN_GRANT"
     
     public PointSource(Byte id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}
+```
+
+### Role Table (User Access Control)
+```java
+@Entity
+@Table(name = "roles")
+public class Role {
+    @Id
+    private Byte id; // 1 = ADMIN, 2 = USER
+    
+    @Column(unique = true, nullable = false, length = 10)
+    private String name; // "ADMIN", "USER"
+    
+    public Role(Byte id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -324,7 +346,7 @@ public class WalletTransaction {
 }
 ```
 
-## Data Initialization (Reference Data)
+## Data Initialization (Reference Data & Demo Users)
 
 ```java
 @Component
@@ -340,8 +362,26 @@ public class DataInitializer {
     @Autowired
     private PointSourceRepository pointSourceRepository;
     
+    @Autowired
+    private RoleRepository roleRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private MainPointAccountRepository mainPointRepository;
+    
+    @Autowired
+    private SubPointAccountRepository subPointRepository;
+    
     @EventListener(ApplicationReadyEvent.class)
     public void initializeReferenceData() {
+        // Initialize Roles
+        if (roleRepository.count() == 0) {
+            roleRepository.save(new Role((byte) 1, "ADMIN"));
+            roleRepository.save(new Role((byte) 2, "USER"));
+        }
+        
         // Initialize Point Types
         if (pointTypeRepository.count() == 0) {
             pointTypeRepository.save(new PointType((byte) 1, "MAIN"));
@@ -361,6 +401,53 @@ public class DataInitializer {
             pointSourceRepository.save(new PointSource((byte) 2, "EVENT_REWARD"));
             pointSourceRepository.save(new PointSource((byte) 3, "ADMIN_GRANT"));
         }
+        
+        // Initialize Demo Users for Interview Demonstration
+        if (userRepository.count() == 0) {
+            // Create demo admin user
+            User adminUser = new User();
+            adminUser.setGoogleId("demo-admin-google-id");
+            adminUser.setEmail("admin@demo.com");
+            adminUser.setName("Demo Admin");
+            adminUser.setSmartWalletAddress("0x1234567890123456789012345678901234567890");
+            adminUser.setRoleId((byte) 1); // ADMIN role
+            User savedAdmin = userRepository.save(adminUser);
+            
+            // Create point accounts for admin
+            MainPointAccount adminMainPoints = new MainPointAccount();
+            adminMainPoints.setUserGoogleId(savedAdmin.getGoogleId());
+            adminMainPoints.setBalance(1000);
+            adminMainPoints.setTotalEarned(1000);
+            mainPointRepository.save(adminMainPoints);
+            
+            SubPointAccount adminSubPoints = new SubPointAccount();
+            adminSubPoints.setUserGoogleId(savedAdmin.getGoogleId());
+            adminSubPoints.setBalance(500);
+            adminSubPoints.setTotalEarned(500);
+            subPointRepository.save(adminSubPoints);
+            
+            // Create demo regular user
+            User regularUser = new User();
+            regularUser.setGoogleId("demo-user-google-id");
+            regularUser.setEmail("user@demo.com");
+            regularUser.setName("Demo User");
+            regularUser.setSmartWalletAddress("0x0987654321098765432109876543210987654321");
+            regularUser.setRoleId((byte) 2); // USER role (default)
+            User savedUser = userRepository.save(regularUser);
+            
+            // Create point accounts for regular user
+            MainPointAccount userMainPoints = new MainPointAccount();
+            userMainPoints.setUserGoogleId(savedUser.getGoogleId());
+            userMainPoints.setBalance(100);
+            userMainPoints.setTotalEarned(100);
+            mainPointRepository.save(userMainPoints);
+            
+            SubPointAccount userSubPoints = new SubPointAccount();
+            userSubPoints.setUserGoogleId(savedUser.getGoogleId());
+            userSubPoints.setBalance(200);
+            userSubPoints.setTotalEarned(200);
+            subPointRepository.save(userSubPoints);
+        }
     }
 }
 ```
@@ -369,6 +456,10 @@ public class DataInitializer {
 
 ```java
 public class DatabaseConstants {
+    
+    // Roles
+    public static final byte ROLE_ADMIN = 1;
+    public static final byte ROLE_USER = 2;
     
     // Point Types
     public static final byte MAIN_POINT_TYPE = 1;
@@ -397,6 +488,13 @@ public class DatabaseConstants {
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByGoogleId(String googleId);
     Optional<User> findBySmartWalletAddress(String address);
+    List<User> findByRoleId(Byte roleId);
+    boolean existsByGoogleIdAndRoleId(String googleId, Byte roleId);
+}
+
+@Repository
+public interface RoleRepository extends JpaRepository<Role, Byte> {
+    Optional<Role> findByName(String name);
 }
 
 @Repository
@@ -427,7 +525,7 @@ public interface ConversionTransactionRepository extends JpaRepository<Conversio
 }
 ```
 
-## Service Layer Example
+## Service Layer Example with Role-Based Access Control
 
 ```java
 @Service
@@ -446,6 +544,25 @@ public class PointService {
     @Autowired
     private ConversionTransactionRepository conversionRepository;
     
+    @Autowired
+    private UserRepository userRepository;
+    
+    // Admin only - grant points to users
+    @PreAuthorize("hasRole('ADMIN')")
+    public void grantPointsToUser(String targetUserGoogleId, Byte pointTypeId, Integer amount, String description) {
+        earnPoints(targetUserGoogleId, pointTypeId, amount, DatabaseConstants.SOURCE_ADMIN_GRANT, description);
+    }
+    
+    // Admin only - promote user to admin
+    @PreAuthorize("hasRole('ADMIN')")
+    public void promoteUserToAdmin(String targetUserGoogleId) {
+        User user = userRepository.findByGoogleId(targetUserGoogleId)
+            .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setRoleId(DatabaseConstants.ROLE_ADMIN);
+        userRepository.save(user);
+    }
+    
+    // Both admin and user can earn points through system actions
     public void earnPoints(String userGoogleId, Byte pointTypeId, Integer amount, Byte sourceId, String description) {
         // Record transaction
         PointEarnTransaction transaction = new PointEarnTransaction();
