@@ -151,6 +151,9 @@ For comprehensive technical details, see:
 - **[CLAUDE-API.md](./CLAUDE-API.md)** - Complete API endpoint specifications
 - **[CLAUDE-FRONTEND.md](./CLAUDE-FRONTEND.md)** - Frontend application structure and components
 - **[CLAUDE-ARCHITECTURE.md](./CLAUDE-ARCHITECTURE.md)** - Technical decisions and architecture analysis
+- **[CLAUDE-TESTING.md](./CLAUDE-TESTING.md)** - Comprehensive testing strategy and approaches
+- **[CLAUDE-DATABASE.md](./CLAUDE-DATABASE.md)** - Database design and JPA entity specifications
+- **[CLAUDE-DEPLOYMENT.md](./CLAUDE-DEPLOYMENT.md)** - Jenkins CI/CD deployment on single AWS Ubuntu instance
 
 ## Development Requirements
 
