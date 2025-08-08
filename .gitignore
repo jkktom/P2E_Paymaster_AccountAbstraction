@@ -1,0 +1,270 @@
+# ===========================================
+# Blockchain Exchange Service - Git Ignore
+# ===========================================
+
+# ============= Java/Spring Boot =============
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Maven (if used)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Spring Boot DevTools
+spring-boot-devtools.properties
+
+# ============= Node.js/Next.js =============
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Next.js
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# Production build
+dist/
+build/
+
+# ============= Environment Files =============
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ============= IDE Files =============
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ============= Database Files =============
+# H2 Database
+*.db
+*.h2.db
+*.mv.db
+*.trace.db
+
+# SQLite
+*.sqlite
+*.sqlite3
+
+# PostgreSQL dumps
+*.sql.backup
+*.dump
+
+# ============= Blockchain/Web3 =============
+# Private keys and wallets
+*.key
+*.keystore
+*.json.key
+wallet/
+keystore/
+
+# Hardhat
+cache/
+artifacts/
+typechain/
+typechain-types/
+
+# Foundry
+lib/
+cache_forge/
+out_forge/
+
+# ============= Docker =============
+# Docker
+.dockerignore
+
+# ============= Logs =============
+# Log files
+*.log
+logs/
+log/
+
+# ============= Testing =============
+# Test results
+/test-results/
+/playwright-report/
+/playwright/.cache/
+coverage/
+*.lcov
+
+# JUnit
+TEST-*.xml
+
+# ============= OS Generated Files =============
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============= Temporary Files =============
+# General temp files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# ============= Security Sensitive =============
+# API Keys and Secrets (double-check these don't get committed)
+**/secrets.yml
+**/secrets.yaml
+**/application-secrets.yml
+**/application-secrets.yaml
+
+# Certificate files
+*.crt
+*.cer
+*.pem
+*.p12
+*.pfx
+
+# ============= Deployment =============
+# Deployment scripts with sensitive info
+deploy.sh
+deployment.yml
+
+# Jenkins workspace
+.jenkins/
+
+# Docker compose override files
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# ============= Misc =============
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# ============= Project Specific =============
+# Custom ignore patterns for this project
+demo-data/
+backup/
+*.backup.sql
+
+# Ignore compiled smart contracts (we'll commit source only)
+contracts/artifacts/
+contracts/cache/
