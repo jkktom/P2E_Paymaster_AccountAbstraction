@@ -153,6 +153,7 @@ For comprehensive technical details, see:
 - **[Technical Architecture](./claudemds/CLAUDE-ARCHITECTURE.md)** - Technical decisions and architecture analysis
 - **[Testing Strategy](./claudemds/CLAUDE-TESTING.md)** - Comprehensive testing strategy and approaches
 - **[Database Design](./claudemds/CLAUDE-DATABASE.md)** - Database design and JPA entity specifications
+- **[Smart Contracts](./claudemds/CLAUDE-CONTRACTS.md)** - Solidity governance token with voting functionality
 - **[Deployment Guide](./claudemds/CLAUDE-DEPLOYMENT.md)** - Jenkins CI/CD deployment on single AWS Ubuntu instance
 - **[Setup Guide](./claudemds/CLAUDE-SETUP.md)** - Development environment setup guide
 

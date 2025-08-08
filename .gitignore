@@ -264,6 +264,8 @@ coverage/
 demo-data/
 backup/
 *.backup.sql
+local-data/
+claudemds/
 
 # Ignore compiled smart contracts (we'll commit source only)
 contracts/artifacts/

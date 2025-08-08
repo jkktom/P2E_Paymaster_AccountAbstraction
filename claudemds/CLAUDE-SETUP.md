@@ -120,7 +120,7 @@ src/main/resources/
 ```yaml
 spring:
   application:
-    name: blockchain-exchange-backend
+    name: spring-backend
   
   profiles:
     active: dev
@@ -505,7 +505,7 @@ npm run test:e2e
 ```yaml
 services:
   postgres:
-    image: postgres:15
+    image: postgres:16
     environment:
       POSTGRES_DB: exchangedb
       POSTGRES_USER: postgres
