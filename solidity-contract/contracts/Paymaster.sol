@@ -9,9 +9,9 @@ import "@matterlabs/zksync-contracts/contracts/system-contracts/Constants.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
-/// @author Jake Kim (based on Matter Labs examples)
-/// @notice Governance-focused zkSync paymaster for gasless voting and proposal operations
-/// @dev Sponsors gas for governance token holders to participate in DAO activities
+/// @author JakeWeb3
+/// @notice 투표기능을 보장하는 가스리스 아키텍처
+
 contract GovernancePaymaster is IPaymaster, Ownable {
     /* ========== State Variables ========== */
     address public immutable governanceToken;
