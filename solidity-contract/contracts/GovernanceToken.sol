@@ -241,6 +241,13 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
         return getVotes(account);
     }
     
+    /**
+     * @dev 자신의 투표권을 다른 주소에 위임
+     */
+    function delegateVoting(address delegatee) external {
+        _delegate(msg.sender, delegatee);
+    }
+    
     // ============= 관리자 함수 =============
     /**
      * @dev Pause 일시정지 함수

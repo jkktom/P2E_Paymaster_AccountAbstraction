@@ -62,7 +62,7 @@ User: {
 
 MainPointAccount: {
   id, userId, balance, totalEarned,
-  pointsToToken, // total converted to governance tokens
+  pointsToToken, // total exchanged to governance tokens
   createdAt, updatedAt
 }
 

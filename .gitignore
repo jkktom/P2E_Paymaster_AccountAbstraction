@@ -266,6 +266,7 @@ backup/
 *.backup.sql
 local-data/
 claudemds/
+paymaster-examples/
 
 # Ignore compiled smart contracts (we'll commit source only)
 contracts/artifacts/

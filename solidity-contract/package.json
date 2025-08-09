@@ -4,15 +4,25 @@
   "description": "Blooming Blockchain service for governance voting",
   "scripts": {
     "compile": "hardhat compile",
+    "compile:zksync": "hardhat compile --network zkSyncSepolia",
     "test": "hardhat test",
     "test:coverage": "hardhat coverage",
     "deploy:local": "hardhat ignition deploy ignition/modules/GovernanceToken.ts --network localhost",
     "deploy:sepolia": "hardhat ignition deploy ignition/modules/GovernanceToken.ts --network sepolia",
+    "deploy:zksync": "hardhat ignition deploy ignition/modules/GovernanceToken.ts --network zkSyncSepolia",
+    "deploy:paymaster": "hardhat run scripts/deploy-paymaster-zksync.ts --network zkSyncSepolia",
+    "test:zksync": "hardhat test --network zkSyncSepolia",
     "verify:sepolia": "hardhat verify --network sepolia",
     "node": "hardhat node",
     "clean": "hardhat clean"
   },
-  "keywords": ["blockchain", "governance", "tokens", "hardhat", "solidity"],
+  "keywords": [
+    "blockchain",
+    "governance",
+    "tokens",
+    "hardhat",
+    "solidity"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
@@ -24,6 +34,11 @@
     "solidity-coverage": "^0.8.16"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.4.0"
+    "@matterlabs/hardhat-zksync-deploy": "^1.8.0",
+    "@matterlabs/hardhat-zksync-solc": "^1.5.0",
+    "@matterlabs/hardhat-zksync-verify": "^1.9.0",
+    "@matterlabs/zksync-contracts": "^28.0.1",
+    "@openzeppelin/contracts": "^5.4.0",
+    "zksync-ethers": "^6.20.0"
   }
 }
