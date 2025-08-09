@@ -10,28 +10,27 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 
 /**
  * @title GovernanceToken
- * @dev ERC20 token with built-in voting functionality for blockchain exchange service
+ * @dev 투표 기능이 내장된 ERC20 토큰
  * 
  * Features:
- * - Standard ERC20 functionality
- * - Voting power delegation and tracking
- * - Proposal creation and voting system
- * - Backend-controlled minting for point exchange
- * - Pausable for emergency situations
+ * - ERC20 기능 구현
+ * - 투표 권한 부여 및 추적
+ * - 제안 생성 및 투표 시스템
+ * - 백엔드 제어 토큰 발행
+ * - 일시정지 기능 구현
  */
 contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuard {
     
-    // ============= Constants =============
-    uint256 public constant VOTING_PERIOD = 7 days;
-    uint256 public constant MIN_VOTING_POWER = 1e18; // 1 token minimum
+    // ============= 상수 선언 =============
+    uint256 public constant MIN_VOTING_POWER = 1e18; // 최소 투표 권한 1 token
     
-    // ============= State Variables =============
+    // ============= 상태 변수 선언 =============
     uint256 public proposalCount;
     mapping(uint256 => Proposal) public proposals;
     mapping(uint256 => mapping(address => bool)) public hasVoted;
     mapping(uint256 => mapping(address => uint256)) public votePower;
     
-    // ============= Events =============
+    // ============= 이벤트 선언 =============
     event ProposalCreated(
         uint256 indexed proposalId,
         address indexed proposer,
@@ -50,7 +49,7 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
     
     event TokensMinted(address indexed to, uint256 amount, string reason);
     
-    // ============= Structs =============
+    // ============= 투표 제안 구조체  =============
     struct Proposal {
         string description;
         address proposer;
@@ -62,21 +61,21 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
         uint256 createdAt;
     }
     
-    // ============= Constructor =============
+    // ============= 생성자 =============
     constructor(
         string memory name,
         string memory symbol
     ) ERC20(name, symbol) EIP712(name, "1") Ownable(msg.sender) {
-        // Initial setup - owner is the backend service
+        // 초기 설정 - 소유자는 백엔드 서비스에서 발행한 토큰을 관리하는 주체
     }
     
-    // ============= Minting Functions =============
+    // ============= 토큰 발행 함수 =============
     /**
-     * @dev Mint tokens for point-to-token exchange
-     * Only callable by backend service (owner)
-     * @param to Address to mint tokens to
-     * @param amount Amount of tokens to mint
-     * @param reason Reason for minting (for audit trail)
+     * @dev 토큰 발행 함수
+     * 백엔드 서비스(소유자)만 호출 가능
+     * @param to 토큰 발행 대상 주소
+     * @param amount 발행할 토큰 양
+     * @param reason 발행 이유 (감사 기록용)
      */
     function mintForExchange(
         address to,
@@ -91,8 +90,7 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
     }
     
     /**
-     * @dev Batch mint tokens for multiple users
-     * Gas-efficient for multiple exchanges
+     * @dev 다수 사용자에게 토큰 발행 함수
      */
     function batchMint(
         address[] calldata recipients,
@@ -112,15 +110,19 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
         emit TokensMinted(address(0), 0, reason); // Batch event
     }
     
-    // ============= Voting Functions =============
+    // ============= 투표 함수 =============
     /**
-     * @dev Create a new proposal
-     * Requires minimum voting power
+     * @dev 새로운 제안 생성 함수
+     * 최소 투표 권한 필요
      */
-    function createProposal(string calldata description) external whenNotPaused {
+    function createProposal(
+        string calldata description,
+        uint256 deadline
+    ) external whenNotPaused {
         require(getVotes(msg.sender) >= MIN_VOTING_POWER, "Insufficient voting power");
         require(bytes(description).length > 0, "Description cannot be empty");
-        
+        require(deadline > block.timestamp, "Deadline must be in the future");
+
         proposalCount++;
         uint256 proposalId = proposalCount;
         
@@ -129,17 +131,17 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
             proposer: msg.sender,
             forVotes: 0,
             againstVotes: 0,
-            deadline: block.timestamp + VOTING_PERIOD,
+            deadline: deadline,
             executed: false,
             canceled: false,
             createdAt: block.timestamp
         });
         
-        emit ProposalCreated(proposalId, msg.sender, description, block.timestamp + VOTING_PERIOD);
+        emit ProposalCreated(proposalId, msg.sender, description, deadline);
     }
     
     /**
-     * @dev Vote on a proposal
+     * @dev 제안에 투표 함수
      */
     function vote(uint256 proposalId, bool support) external whenNotPaused {
         require(proposalId > 0 && proposalId <= proposalCount, "Invalid proposal ID");
@@ -166,7 +168,7 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
     }
     
     /**
-     * @dev Execute a passed proposal
+     * @dev 통과된 제안 실행 함수
      */
     function executeProposal(uint256 proposalId) external whenNotPaused {
         require(proposalId > 0 && proposalId <= proposalCount, "Invalid proposal ID");
@@ -182,7 +184,7 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
     }
     
     /**
-     * @dev Cancel a proposal (owner only)
+     * @dev 제안 취소 함수 (소유자만 호출 가능)
      */
     function cancelProposal(uint256 proposalId) external onlyOwner {
         require(proposalId > 0 && proposalId <= proposalCount, "Invalid proposal ID");
@@ -193,9 +195,9 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
         proposal.canceled = true;
     }
     
-    // ============= View Functions =============
+    // ============= 뷰 함수 =============
     /**
-     * @dev Get proposal details
+     * @dev 제안 상세 정보 조회 함수
      */
     function getProposal(uint256 proposalId) external view returns (
         string memory description,
@@ -223,7 +225,7 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
     }
     
     /**
-     * @dev Check if address has voted on proposal
+     * @dev 특정 주소가 제안에 투표했는지 확인 함수
      */
     function getVoteInfo(uint256 proposalId, address voter) external view returns (
         bool voted,
@@ -233,28 +235,28 @@ contract GovernanceToken is ERC20, ERC20Votes, Ownable, Pausable, ReentrancyGuar
     }
     
     /**
-     * @dev Get voting power of an address
+     * @dev 특정 주소의 투표 권한 조회 함수
      */
     function getVotingPower(address account) external view returns (uint256) {
         return getVotes(account);
     }
     
-    // ============= Admin Functions =============
+    // ============= 관리자 함수 =============
     /**
-     * @dev Pause contract in emergency
+     * @dev Pause 일시정지 함수
      */
     function pause() external onlyOwner {
         _pause();
     }
     
     /**
-     * @dev Unpause contract
+     * @dev 일시정지 해제
      */
     function unpause() external onlyOwner {
         _unpause();
     }
     
-    // ============= Required Overrides =============
+    // ============= 필수 오버라이드 함수 =============
     function _update(
         address from,
         address to,
