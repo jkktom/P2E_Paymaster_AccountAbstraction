@@ -1,0 +1,15 @@
+[profile.default]
+src = "contracts"            # your contracts live here
+out = "zkout"
+libs = ["node_modules", "lib"]
+solc_version = "0.8.30"
+remappings = [
+  "@openzeppelin/=node_modules/@openzeppelin/",
+  "@matterlabs/=node_modules/@matterlabs/"
+]
+
+[profile.default.zksync]
+compile = true
+
+[rpc_endpoints]
+zksync_sepolia = "https://sepolia.era.zksync.dev"

@@ -13,5 +13,14 @@ node_modules
 /coverage
 /coverage.json
 
+
 # Hardhat Ignition deployment artifacts
 ignition/deployments/
+
+# Foundry build output
+/zkout
+
+# Local tools/binaries
+/tools/
+/foundryup-zksync
+/solidity-contract/src/

@@ -6,6 +6,7 @@
 
 ### 배포된 컨트랙트 정보
 
+#### GovernanceToken
 - **컨트랙트 이름**: Blooming Blockchain Service Token
 - **토큰 심볼**: BLOOM
 - **네트워크**: zkSync Sepolia Testnet
@@ -13,10 +14,26 @@
 - **컨트랙트 주소**: `0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e`
 - **배포 날짜**: 2024년 8월 9일
 
+#### GovernancePaymaster (NEW!)
+- **컨트랙트 이름**: GovernancePaymaster
+- **네트워크**: zkSync Sepolia Testnet
+- **체인 ID**: 300
+- **컨트랙트 주소**: `0x10219E515c3955916d79A1aC614B86187f0872BC`
+- **배포자**: `0x5a394A0bb24361da49cE1B10df99CDBDcF7Bb4c1`
+- **트랜잭션 해시**: `0x0c17fd1ff136605a61c579e70c4baa084dafcdabd8f8cfa6cae61352e0955a92`
+- **배포 날짜**: 2024년 8월 9일
+- **연결된 거버넌스 토큰**: `0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e`
+
 ### 익스플로러 링크
 
+**GovernanceToken:**
 ```
 https://sepolia.explorer.zksync.io/address/0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e
+```
+
+**GovernancePaymaster:**
+```
+https://sepolia.explorer.zksync.io/address/0x10219E515c3955916d79A1aC614B86187f0872BC
 ```
 
 ## 컨트랙트 기능

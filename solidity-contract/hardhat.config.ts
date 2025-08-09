@@ -16,14 +16,11 @@ const config: HardhatUserConfig = {
       },
     },
   },
-  // zkSync 컴파일러 설정
+  // zkSync 컴파일러 설정  
   zksolc: {
-    version: "latest",
+    version: "1.5.15",
     settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
-      },
+      optimizer: { enabled: true, runs: 200 }
     },
   },
   networks: {
