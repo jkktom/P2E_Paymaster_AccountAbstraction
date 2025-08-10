@@ -132,36 +132,72 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
               </p>
             </div>
           </div>
-
-          {/* Auth Section */}
-          <div className="flex items-center space-x-4">
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-            ) : isAuthenticated && user ? (
-              <div className="flex items-center space-x-3">
-                <div className="text-right">
-                  <p className="font-medium text-gray-800 text-sm">{user.name}</p>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                    user.id.includes('admin') ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {user.id.includes('admin') ? 'Admin' : 'User'}
-                  </span>
+          {/* Right side content */}
+          <div className="flex items-center space-x-6">
+            {/* Status Bar */}
+            <div className="hidden lg:flex items-center space-x-6 text-sm">
+              {/* Main Points */}
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">M</span>
                 </div>
-                <button
-                  onClick={signOut}
-                  className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-                >
-                  Sign Out
-                </button>
+                <span className="text-gray-600">Main:</span>
+                <span className="font-semibold text-gray-800">[]</span>
               </div>
-            ) : (
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Sign In
-              </button>
-            )}
+
+              {/* Sub Points */}
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">S</span>
+                </div>
+                <span className="text-gray-600">Sub:</span>
+                <span className="font-semibold text-gray-800">[]</span>
+              </div>
+
+              {/* Token */}
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">T</span>
+                </div>
+                <span className="text-gray-600">Token:</span>
+                <span className="font-semibold text-gray-800">[]</span>
+              </div>
+            </div>
+
+            {/* Auth Section */}
+            <div className="flex items-center space-x-4">
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              ) : isAuthenticated && user ? (
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <p className="font-medium text-gray-800 text-sm">{user.name}</p>
+                    <span
+                      className={`inline-block px-2 py-1 rounded-full text-xs ${
+                        user.id.includes('admin')
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      {user.id.includes('admin') ? 'Admin' : 'User'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={signOut}
+                    className="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </header>

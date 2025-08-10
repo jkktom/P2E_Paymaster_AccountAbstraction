@@ -28,36 +28,29 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
         flex flex-col
       `}>
         {/* Sidebar Header */}
-        <div className="p-4 border-b bg-gray-50">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800">
-                Navigation
-              </h2>
-              <p className="text-xs text-gray-600">Menu</p>
-            </div>
-            {/* Mobile close button */}
-            <button
-              onClick={() => setIsMobileOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
-              aria-label="Close sidebar"
+        <div className="flex items-center justify-between p-4">
+        {/* Mobile close button */}
+        <button
+            onClick={() => setIsMobileOpen(false)}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+            aria-label="Close sidebar"
+        >
+            <svg
+            className="w-4 h-4 text-gray-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
             >
-              <svg
-                className="w-4 h-4 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+            />
+            </svg>
+        </button>
         </div>
+        
 
         {/* Navigation Menu */}
         <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
@@ -138,7 +131,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">⚡</span>
-                <span>메인포인트 → 거버넌스토큰</span>
+                <span>포인트 → 토큰 교환</span>
               </a>
             </div>
 
@@ -151,7 +144,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">💎</span>
-                <span>거버넌스토큰 잔액</span>
+                <span>토큰보유현황</span>
               </a>
             </div>
 
@@ -164,7 +157,19 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">💳</span>
-                <span>AA 지갑 주소</span>
+                <span>지갑 주소 확인</span>
+              </a>
+            </div>
+            {/* Vote */}
+            <div className="ml-2 space-y-1 pt-2">
+              <p className="text-xs text-gray-500 px-3 py-1">투표 참여  </p>
+              <a 
+                href="#vote" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">📊</span>
+                <span>투표 참여</span>
               </a>
             </div>
           </div>
@@ -231,22 +236,6 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
               )}
             </div>
           )}
-
-          {/* System Status */}
-          <div className="space-y-1 pt-4 border-t">
-            <h3 className="font-medium text-gray-500 text-xs uppercase tracking-wider px-3 py-2">
-              시스템 상태
-            </h3>
-            
-            <a 
-              href="#status" 
-              onClick={() => setIsMobileOpen(false)}
-              className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors text-sm"
-            >
-              <span className="text-base mr-3">📊</span>
-              <span>시스템 상태</span>
-            </a>
-          </div>
         </nav>
 
         {/* User Info at Bottom */}
