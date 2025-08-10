@@ -60,90 +60,191 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {/* Always visible features */}
+        <nav className="flex-1 p-4 space-y-3 overflow-y-auto">
+          {/* 1. POINTS Section */}
           <div className="space-y-1">
-            <h3 className="font-medium text-gray-500 text-xs uppercase tracking-wider px-3 py-2">
-              Pages
+            <h3 className="font-medium text-orange-600 text-sm px-3 py-2 border-b border-orange-100">
+              🪙 포인트 (Points)
             </h3>
             
-            <a 
-              href="#hero" 
-              onClick={() => setIsMobileOpen(false)}
-              className="flex items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm"
-            >
-              <span className="text-lg mr-3">🏠</span>
-              <span>Home</span>
-            </a>
+            {/* Point Earning */}
+            <div className="ml-2 space-y-1">
+              <p className="text-xs text-gray-500 px-3 py-1">포인트 받기</p>
+              <a 
+                href="#earn-sub-10" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">🎁</span>
+                <span>서브포인트 +10 받기</span>
+              </a>
+              <a 
+                href="#earn-sub-50" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">🎁</span>
+                <span>서브포인트 +50 받기</span>
+              </a>
+              <a 
+                href="#earn-main-5" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">⭐</span>
+                <span>메인포인트 +5 받기</span>
+              </a>
+            </div>
 
-            <a 
-              href="#features" 
-              onClick={() => setIsMobileOpen(false)}
-              className="flex items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm"
-            >
-              <span className="text-lg mr-3">⚡</span>
-              <span>Features</span>
-            </a>
+            {/* Point Conversion */}
+            <div className="ml-2 space-y-1 pt-2">
+              <p className="text-xs text-gray-500 px-3 py-1">포인트 변환</p>
+              <a 
+                href="#convert-sub-main" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">🔄</span>
+                <span>서브 → 메인 변환</span>
+              </a>
+            </div>
 
-            <a 
-              href="#demo" 
-              onClick={() => setIsMobileOpen(false)}
-              className="flex items-center px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm"
-            >
-              <span className="text-lg mr-3">📋</span>
-              <span>Demo</span>
-            </a>
+            {/* Balance Display */}
+            <div className="ml-2 space-y-1 pt-2">
+              <p className="text-xs text-gray-500 px-3 py-1">내 잔액</p>
+              <a 
+                href="#point-balance" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">💰</span>
+                <span>포인트 잔액 확인</span>
+              </a>
+            </div>
           </div>
 
-          {/* Authenticated user features */}
+          {/* 2. TOKEN Section */}
+          <div className="space-y-1">
+            <h3 className="font-medium text-green-600 text-sm px-3 py-2 border-b border-green-100">
+              🪙 토큰 (Token)
+            </h3>
+            
+            {/* Token Exchange */}
+            <div className="ml-2 space-y-1">
+              <p className="text-xs text-gray-500 px-3 py-1">토큰 교환 (가스리스)</p>
+              <a 
+                href="#exchange-main-token" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">⚡</span>
+                <span>메인포인트 → 거버넌스토큰</span>
+              </a>
+            </div>
+
+            {/* Token Balance */}
+            <div className="ml-2 space-y-1 pt-2">
+              <p className="text-xs text-gray-500 px-3 py-1">토큰 잔액</p>
+              <a 
+                href="#token-balance" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">💎</span>
+                <span>거버넌스토큰 잔액</span>
+              </a>
+            </div>
+
+            {/* Wallet Info */}
+            <div className="ml-2 space-y-1 pt-2">
+              <p className="text-xs text-gray-500 px-3 py-1">지갑 정보</p>
+              <a 
+                href="#wallet-info" 
+                onClick={() => setIsMobileOpen(false)}
+                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
+              >
+                <span className="text-base mr-3">💳</span>
+                <span>AA 지갑 주소</span>
+              </a>
+            </div>
+          </div>
+
+          {/* 3. VOTE Section */}
           {isAuthenticated && user && (
-            <div className="space-y-1 pt-4 border-t">
-              <h3 className="font-medium text-gray-500 text-xs uppercase tracking-wider px-3 py-2">
-                My Account
+            <div className="space-y-1">
+              <h3 className="font-medium text-purple-600 text-sm px-3 py-2 border-b border-purple-100">
+                🗳️ 투표 (Vote)
               </h3>
               
-              <a 
-                href="#points" 
-                onClick={() => setIsMobileOpen(false)}
-                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
-              >
-                <span className="text-lg mr-3">🪙</span>
-                <span>Points Manager</span>
-              </a>
+              {/* Voting Power */}
+              <div className="ml-2 space-y-1">
+                <p className="text-xs text-gray-500 px-3 py-1">투표 권한</p>
+                <a 
+                  href="#voting-power" 
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
+                >
+                  <span className="text-base mr-3">⚡</span>
+                  <span>투표 권한 확인</span>
+                </a>
+              </div>
 
-              <a 
-                href="#wallet" 
-                onClick={() => setIsMobileOpen(false)}
-                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
-              >
-                <span className="text-lg mr-3">💳</span>
-                <span>Wallet Connect</span>
-              </a>
+              {/* Proposals */}
+              <div className="ml-2 space-y-1 pt-2">
+                <p className="text-xs text-gray-500 px-3 py-1">거버넌스 제안</p>
+                <a 
+                  href="#proposals" 
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
+                >
+                  <span className="text-base mr-3">📋</span>
+                  <span>제안 목록</span>
+                </a>
+              </div>
 
-              <a 
-                href="#governance" 
-                onClick={() => setIsMobileOpen(false)}
-                className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
-              >
-                <span className="text-lg mr-3">🗳️</span>
-                <span>Governance</span>
-              </a>
+              {/* Voting Buttons */}
+              <div className="ml-2 space-y-1 pt-2">
+                <p className="text-xs text-gray-500 px-3 py-1">투표 참여 (가스리스)</p>
+                <a 
+                  href="#vote-buttons" 
+                  onClick={() => setIsMobileOpen(false)}
+                  className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
+                >
+                  <span className="text-base mr-3">✅</span>
+                  <span>찬성/반대 투표</span>
+                </a>
+              </div>
+
+              {/* Create Proposal (Admin only) */}
+              {user.id.includes('admin') && (
+                <div className="ml-2 space-y-1 pt-2">
+                  <p className="text-xs text-gray-500 px-3 py-1">관리자 기능</p>
+                  <a 
+                    href="#create-proposal" 
+                    onClick={() => setIsMobileOpen(false)}
+                    className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
+                  >
+                    <span className="text-base mr-3">➕</span>
+                    <span>제안 생성</span>
+                  </a>
+                </div>
+              )}
             </div>
           )}
 
           {/* System Status */}
           <div className="space-y-1 pt-4 border-t">
             <h3 className="font-medium text-gray-500 text-xs uppercase tracking-wider px-3 py-2">
-              System
+              시스템 상태
             </h3>
             
             <a 
               href="#status" 
               onClick={() => setIsMobileOpen(false)}
-              className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
+              className="flex items-center px-3 py-2 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors text-sm"
             >
-              <span className="text-lg mr-3">📊</span>
-              <span>Status</span>
+              <span className="text-base mr-3">📊</span>
+              <span>시스템 상태</span>
             </a>
           </div>
         </nav>

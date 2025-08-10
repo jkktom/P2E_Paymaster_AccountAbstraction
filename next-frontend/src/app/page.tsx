@@ -76,40 +76,184 @@ export default function Home() {
       {/* Main Application - Conditional Content */}
       {isAuthenticated && user ? (
         <>
-          {/* User Dashboard */}
+          {/* POINTS Section */}
           <section className="mb-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Left Column */}
-              <div className="space-y-6" id="points">
-                <PointsManager user={user} />
-                <WalletConnect onWalletChange={handleWalletChange} />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              {/* Point Earning Buttons */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow-md p-6" id="earn-sub-10">
+                  <h3 className="text-lg font-semibold text-orange-600 mb-4">🎁 포인트 받기 (테스트용)</h3>
+                  <div className="space-y-3">
+                    <button className="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors">
+                      서브포인트 +10 받기 🎁
+                    </button>
+                    <button className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors" id="earn-sub-50">
+                      서브포인트 +50 받기 🎁
+                    </button>
+                    <button className="w-full px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors" id="earn-main-5">
+                      메인포인트 +5 받기 ⭐
+                    </button>
+                  </div>
+                </div>
+
+                {/* Point Conversion */}
+                <div className="bg-white rounded-lg shadow-md p-6" id="convert-sub-main">
+                  <h3 className="text-lg font-semibold text-orange-600 mb-4">🔄 포인트 변환</h3>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-orange-50 rounded-lg">
+                      <h4 className="font-medium mb-2">서브 → 메인 포인트</h4>
+                      <p className="text-sm text-gray-600 mb-3">100 서브포인트 = 10 메인포인트</p>
+                      <button className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
+                        100 서브포인트 → 10 메인포인트로 변환
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Right Column */}
-              <div className="space-y-6" id="governance">
-                <GovernanceVoting user={user} wallet={wallet} />
+              {/* Point Balance & Points Manager */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow-md p-6" id="point-balance">
+                  <h3 className="text-lg font-semibold text-orange-600 mb-4">💰 내 포인트 잔액</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-blue-600 mb-1">서브포인트</p>
+                      <p className="text-2xl font-bold text-blue-700">0</p>
+                    </div>
+                    <div className="bg-green-50 p-4 rounded-lg text-center">
+                      <p className="text-sm text-green-600 mb-1">메인포인트</p>
+                      <p className="text-2xl font-bold text-green-700">0</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="points">
+                  <PointsManager user={user} />
+                </div>
               </div>
             </div>
           </section>
 
-          {/* Smart Wallet Info */}
-          {user.smartWalletAddress && (
-            <section className="mb-12" id="wallet">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold mb-3">Account Abstraction Wallet</h3>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Your Smart Wallet Address:</p>
-                  <p className="font-mono text-sm bg-white p-2 rounded border break-all">
-                    {user.smartWalletAddress}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    This wallet was automatically created by the Spring Boot backend using Account Abstraction.
-                    All transactions are gasless via zkSync paymaster.
-                  </p>
+          {/* TOKEN Section */}
+          <section className="mb-12">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              {/* Token Exchange */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow-md p-6" id="exchange-main-token">
+                  <h3 className="text-lg font-semibold text-green-600 mb-4">⚡ 토큰 교환 (가스리스)</h3>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-medium mb-2">메인포인트 → 거버넌스토큰</h4>
+                    <p className="text-sm text-gray-600 mb-3">10 메인포인트 = 1 거버넌스토큰 (가스비 무료!)</p>
+                    <button className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
+                      10 메인포인트 → 1 거버넌스토큰으로 교환 (가스리스) ⚡
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6" id="wallet-info">
+                  <h3 className="text-lg font-semibold text-green-600 mb-4">💳 AA 지갑 주소</h3>
+                  {user.smartWalletAddress ? (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-2">Smart Wallet Address:</p>
+                      <p className="font-mono text-sm bg-white p-3 rounded border break-all">
+                        {user.smartWalletAddress}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        zkSync Account Abstraction으로 생성된 지갑입니다. 모든 거래가 가스리스로 처리됩니다.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">지갑 생성 중...</p>
+                  )}
                 </div>
               </div>
-            </section>
-          )}
+
+              {/* Token Balance */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow-md p-6" id="token-balance">
+                  <h3 className="text-lg font-semibold text-green-600 mb-4">💎 거버넌스토큰 잔액</h3>
+                  <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-2">보유 중인 거버넌스토큰</p>
+                    <p className="text-3xl font-bold text-green-700">0 BLOOM</p>
+                    <p className="text-xs text-gray-500 mt-2">토큰을 보유하면 가스리스 투표가 가능합니다</p>
+                  </div>
+                </div>
+
+                <WalletConnect onWalletChange={handleWalletChange} />
+              </div>
+            </div>
+          </section>
+
+          {/* VOTE Section */}
+          <section className="mb-12">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              {/* Voting Power & Proposals */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow-md p-6" id="voting-power">
+                  <h3 className="text-lg font-semibold text-purple-600 mb-4">⚡ 투표 권한 확인</h3>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <p className="text-sm text-purple-700 mb-2">현재 투표 권한</p>
+                    <p className="text-2xl font-bold text-purple-800">0 BLOOM</p>
+                    <p className="text-xs text-gray-600 mt-2">거버넌스토큰을 보유하면 가스리스 투표가 가능합니다</p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6" id="proposals">
+                  <h3 className="text-lg font-semibold text-purple-600 mb-4">📋 제안 목록</h3>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-600">현재 활성화된 제안이 없습니다.</p>
+                      <p className="text-xs text-gray-500 mt-1">관리자가 제안을 생성하면 여기에 표시됩니다.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Voting Interface */}
+              <div className="space-y-6">
+                <div className="bg-white rounded-lg shadow-md p-6" id="vote-buttons">
+                  <h3 className="text-lg font-semibold text-purple-600 mb-4">✅ 찬성/반대 투표 (가스리스)</h3>
+                  <div className="p-4 bg-purple-50 rounded-lg text-center">
+                    <p className="text-sm text-gray-600 mb-4">투표하려면 거버넌스토큰이 필요합니다</p>
+                    <div className="flex gap-3">
+                      <button 
+                        disabled 
+                        className="flex-1 px-4 py-2 bg-green-300 text-white rounded-lg opacity-50 cursor-not-allowed"
+                      >
+                        찬성 (무료) ⚡
+                      </button>
+                      <button 
+                        disabled 
+                        className="flex-1 px-4 py-2 bg-red-300 text-white rounded-lg opacity-50 cursor-not-allowed"
+                      >
+                        반대 (무료) ⚡
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {user.id.includes('admin') && (
+                  <div className="bg-white rounded-lg shadow-md p-6" id="create-proposal">
+                    <h3 className="text-lg font-semibold text-purple-600 mb-4">➕ 제안 생성 (관리자)</h3>
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="제안 내용을 입력하세요..."
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      />
+                      <button className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                        거버넌스 제안 생성
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div id="governance">
+                  <GovernanceVoting user={user} wallet={wallet} />
+                </div>
+              </div>
+            </div>
+          </section>
         </>
       ) : (
         /* Public Demo Content */
