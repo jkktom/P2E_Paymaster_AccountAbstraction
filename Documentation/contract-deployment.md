@@ -14,7 +14,7 @@
 - **컨트랙트 주소**: `0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e`
 - **배포 날짜**: 2024년 8월 9일
 
-#### GovernancePaymaster (NEW!)
+#### * * * GovernancePaymaster (NEW!) * * *
 - **컨트랙트 이름**: GovernancePaymaster
 - **네트워크**: zkSync Sepolia Testnet
 - **체인 ID**: 300
