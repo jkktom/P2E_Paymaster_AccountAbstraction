@@ -57,7 +57,6 @@ public class UserService {
                     .email(email)
                     .name(name)
                     .avatar(avatar)
-                    .smartWalletAddress(generateSmartWalletAddress()) // Placeholder for now
                     .roleId((byte) 2) // Default USER role
                     .build();
 
@@ -66,7 +65,6 @@ public class UserService {
             // Initialize user point balance (0, 0, 0)
             userPointTokenService.getOrCreateUserBalance(googleId);
 
-            log.info("Created new user: {} ({}) with wallet: {}", name, email, newUser.getSmartWalletAddress());
             return newUser;
         }
     }
@@ -83,11 +81,6 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    // Find user by smart wallet address
-    @Transactional(readOnly = true)
-    public Optional<User> findBySmartWalletAddress(String smartWalletAddress) {
-        return userRepository.findBySmartWalletAddress(smartWalletAddress);
-    }
 
     // Get all users (admin function)
     @Transactional(readOnly = true)
@@ -117,18 +110,6 @@ public class UserService {
             log.info("Updated user profile for: {} ({})", user.getName(), user.getEmail());
         }
 
-        return user;
-    }
-
-    // Update smart wallet address (called after Alchemy AA wallet creation)
-    public User updateSmartWalletAddress(String googleId, String smartWalletAddress) {
-        User user = userRepository.findByGoogleId(googleId)
-                .orElseThrow(() -> new RuntimeException("User not found: " + googleId));
-
-        user.setSmartWalletAddress(smartWalletAddress);
-        user = userRepository.save(user);
-
-        log.info("Updated smart wallet address for user: {} ({})", user.getName(), user.getEmail());
         return user;
     }
 
@@ -162,14 +143,6 @@ public class UserService {
             return true;
         }
         return false;
-    }
-
-    // Placeholder method for smart wallet address generation
-    // TODO: Replace with actual Alchemy Account Abstraction wallet creation
-    private String generateSmartWalletAddress() {
-        // For now, generate a placeholder address
-        // In production, this will call Alchemy SDK to create AA wallet
-        return "0x" + UUID.randomUUID().toString().replace("-", "").substring(0, 40);
     }
 
     // Get user statistics

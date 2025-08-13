@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
@@ -58,7 +58,6 @@ public class AuthController {
             .email(user.getEmail())
             .name(user.getName())
             .avatar(user.getAvatar())
-            .smartWalletAddress(user.getSmartWalletAddress())
             .roleId(user.getRoleId())
             .createdAt(user.getCreatedAt())
             .build();
@@ -157,5 +156,25 @@ public class AuthController {
             .loginUrl(googleLoginUrl)
             .message("Google OAuth2 login URL")
             .build());
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<LoginUrlResponse> handleGoogleAuth(HttpServletRequest request) {
+        log.info("Google auth endpoint called from: {}", request.getRemoteAddr());
+        
+        String baseUrl = request.getScheme() + "://" + request.getServerName() +
+            (request.getServerPort() != 80 && request.getServerPort() != 443 ? ":" + request.getServerPort() : "");
+        String googleLoginUrl = baseUrl + "/oauth2/authorization/google";
+        
+        log.info("Generated Google login URL: {}", googleLoginUrl);
+
+        LoginUrlResponse response = LoginUrlResponse.builder()
+            .success(true)
+            .loginUrl(googleLoginUrl)
+            .message("Redirecting to Google OAuth2")
+            .build();
+            
+        log.info("Sending response: {}", response);
+        return ResponseEntity.ok(response);
     }
 }

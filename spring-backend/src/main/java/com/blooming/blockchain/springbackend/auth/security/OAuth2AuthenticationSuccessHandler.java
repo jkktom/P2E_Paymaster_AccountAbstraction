@@ -58,7 +58,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .email(user.getEmail())
                 .name(user.getName())
                 .avatar(user.getAvatar())
-                .smartWalletAddress(user.getSmartWalletAddress())
                 .build();
 
             AuthResponse authResponse = AuthResponse.builder()
@@ -69,14 +68,12 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .expiresIn(jwtService.getExpirationTime())
                 .build();
 
-            response.setContentType("application/json");
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Access-Control-Allow-Origin", frontendUrl);
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write(objectMapper.writeValueAsString(authResponse));
-
-            log.info("JWT token generated and sent for user: {}", email);
+            // Redirect to frontend with token
+            String redirectUrl = frontendUrl + "/auth/callback?token=" + jwtToken + 
+                               "&user=" + java.net.URLEncoder.encode(user.getName(), "UTF-8");
+            
+            log.info("Redirecting to frontend with token for user: {}", email);
+            response.sendRedirect(redirectUrl);
 
         } catch (Exception e) {
             log.error("OAuth2 authentication success handling failed", e);

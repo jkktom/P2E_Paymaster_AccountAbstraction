@@ -19,17 +19,11 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Find user by email
     Optional<User> findByEmail(String email);
 
-    // Find user by smart wallet address
-    Optional<User> findBySmartWalletAddress(String smartWalletAddress);
-
     // Check if user exists by Google ID
     boolean existsByGoogleId(String googleId);
 
     // Check if user exists by email
     boolean existsByEmail(String email);
-
-    // Check if smart wallet address is already taken
-    boolean existsBySmartWalletAddress(String smartWalletAddress);
 
     // Find users by role
     List<User> findByRoleId(Byte roleId);

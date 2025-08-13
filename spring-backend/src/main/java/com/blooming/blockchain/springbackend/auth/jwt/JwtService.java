@@ -123,8 +123,18 @@ public class JwtService {
 
     // Get signing key from secret
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        try {
+            // Try to use the configured secret if it's valid
+            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            if (keyBytes.length >= 64) { // HS512 requires at least 64 bytes (512 bits)
+                return Keys.hmacShaKeyFor(keyBytes);
+            }
+        } catch (Exception e) {
+            log.warn("Invalid or weak JWT secret, generating secure key: {}", e.getMessage());
+        }
+        
+        // Generate a secure key for HS512 if the configured secret is too weak
+        return Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
     // Get JWT expiration time in milliseconds

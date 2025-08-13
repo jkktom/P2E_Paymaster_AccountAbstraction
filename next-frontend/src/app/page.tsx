@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import GoogleAuth from '@/components/GoogleAuthBackend'
 import PointsManager from '@/components/PointsManager'
 import WalletConnect from '@/components/WalletConnect'
 import GovernanceVoting from '@/components/GovernanceVoting'
@@ -15,29 +16,49 @@ export default function Home() {
     setWallet(walletState)
   }
 
+  const handleAuthSuccess = (user: any) => {
+    // This will be handled by the useAuth hook automatically
+    console.log('Authentication successful:', user)
+  }
+
   return (
     <div className="px-6 py-8">
-      {/* Hero Section */}
-      <section className="text-center mb-12" id="hero">
-        <h2 className="text-4xl font-bold text-gray-800 mb-4">
-          Welcome to Blooming Blockchain Service
-        </h2>
-        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Experience the future of blockchain with Account Abstraction, gasless transactions, 
-          and governance voting powered by zkSync technology.
-        </p>
-        
-        {!isAuthenticated && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">
-              Sign in to access all features
-            </h3>
-            <p className="text-blue-600 text-sm">
-              Click "Sign In" in the upper right corner to start earning points, 
-              exchanging tokens, and participating in governance voting.
-            </p>
-          </div>
-        )}
+      {/* Hero Section with Facebook-style Auth */}
+      <section className="text-center mb-16" id="hero">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-5xl font-semibold text-gray-900 mb-6 leading-tight">
+            블루밍 블록체인 서비스
+          </h1>
+          <p className="text-xl text-facebook-primary mb-12 max-w-3xl mx-auto leading-relaxed">
+            zkSync 기술로 구현된 가스리스 거래와 거버넌스 투표를 경험해보세요.
+            <br />
+            계정 추상화로 더 간단하고 안전한 블록체인 서비스를 제공합니다.
+          </p>
+          
+          {!isAuthenticated ? (
+            <div className="card-facebook p-8 max-w-md mx-auto">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                서비스 시작하기
+              </h2>
+              <p className="text-facebook-primary mb-8 text-sm leading-relaxed">
+                구글 계정으로 간편하게 로그인하고 포인트를 적립하고, 
+                거버넌스 토큰을 교환해보세요.
+              </p>
+              
+              {/* Google Auth Component */}
+              <GoogleAuth onAuthSuccess={handleAuthSuccess} />
+            </div>
+          ) : (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-2xl mx-auto">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                환영합니다! 🎉
+              </h3>
+              <p className="text-blue-600 text-sm">
+                이제 포인트 적립, 토큰 교환, 거버넌스 투표 등 모든 기능을 이용할 수 있습니다.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Features Overview - Always Visible */}

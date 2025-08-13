@@ -34,6 +34,9 @@ public class SecurityConfig {
             // Disable CSRF for stateless JWT authentication
             .csrf(AbstractHttpConfigurer::disable)
             
+            // Allow H2 console frames
+            .headers(headers -> headers.frameOptions().sameOrigin())
+            
             // Configure CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             
@@ -48,8 +51,12 @@ public class SecurityConfig {
                     "/login/oauth2/**", 
                     "/auth/login/**",
                     "/auth/user",
+                    "/api/auth/login/**",
+                    "/api/auth/google",
+                    "/api/auth/validate",
                     "/public/**",
                     "/actuator/health",
+                    "/h2-console/**",
                     "/error"
                 ).permitAll()
                 

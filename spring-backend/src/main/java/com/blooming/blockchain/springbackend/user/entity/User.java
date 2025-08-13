@@ -15,9 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Table(name = "users", indexes = {
-        @Index(name = "idx_users_google_id", columnList = "googleId"),
-        @Index(name = "idx_users_wallet_address", columnList = "smartWalletAddress"),
-        @Index(name = "idx_users_role", columnList = "roleId")
+        @Index(name = "idx_users_google_id", columnList = "googleId")
 })
 public class User {
     @Id
@@ -33,15 +31,12 @@ public class User {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(length = 500)
+    @Column(name = "avatar", length = 500)
     private String avatar;
 
-    @Column(name = "smart_wallet_address", unique = true, nullable = false, length = 42)
-    private String smartWalletAddress;
 
     @Column(name = "role_id", nullable = false)
-    @Builder.Default
-    private Byte roleId = 2; // Default to USER role (2 = USER, 1 = ADMIN)
+    private Byte roleId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
