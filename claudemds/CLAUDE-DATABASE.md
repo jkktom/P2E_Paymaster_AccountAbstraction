@@ -1,641 +1,244 @@
-# Database Design & JPA Entities
+# Database Design - Architecture Overview
 
-This file documents the final database design using JPA entities with proper ID types and normalization.
+This document explains the database architecture and design decisions for the blockchain goods exchange service.
 
-## Database Technology Choices
+## System Architecture Philosophy
 
-### Development Environment
-- **H2 In-Memory Database**: Zero setup, fast startup for development
-- **Benefits**: No installation, works anywhere, perfect for testing
-- **Configuration**: `spring.datasource.url=jdbc:h2:mem:testdb`
-- **Web Console**: Built-in database browser at `/h2-console`
+**Core Design Principle**: Simple, performant, maintainable data layer supporting hybrid Web2/Web3 operations.
 
-### Production Environment  
-- **PostgreSQL**: Production-grade RDBMS on AWS RDS
-- **Version**: PostgreSQL 15+
-- **Hosting**: AWS RDS Managed Instance
+### Key Architectural Decisions
 
-## JPA Entity Design
+1. **String-based Relations**: Uses `googleId` strings instead of JPA foreign keys for better performance
+2. **Reference Tables**: Expandable lookup tables (Role, PointEarnSpendSource, TransactionStatus) for business flexibility
+3. **Current Balance Focus**: UserPointToken stores only current balances; historical data comes from transaction logs
+4. **Granular Transaction Logging**: Separate amount fields per operation type for detailed audit trails
 
-### User Entity (UUID Primary Key with Role-Based Access Control)
-```java
-@Entity
-@Table(name = "users", indexes = {
-    @Index(name = "idx_users_google_id", columnList = "googleId"),
-    @Index(name = "idx_users_wallet_address", columnList = "smartWalletAddress"),
-    @Index(name = "idx_users_role", columnList = "roleId")
-})
-public class User {
-    @Id
-    private UUID id = UUID.randomUUID();
-    
-    @Column(unique = true, nullable = false)
-    private String googleId;
-    
-    @Column(nullable = false)
-    private String email;
-    
-    @Column(nullable = false)
-    private String name;
-    
-    @Column(length = 500)
-    private String avatar;
-    
-    @Column(name = "smart_wallet_address", unique = true, nullable = false, length = 42)
-    private String smartWalletAddress;
-    
-    @Column(name = "role_id", nullable = false)
-    private Byte roleId = 2; // Default to USER role
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-}
-```
+## Entity Architecture
 
-### Point Type Table (Normalized)
-```java
-@Entity
-@Table(name = "point_types")
-public class PointType {
-    @Id
-    private Byte id; // 1 = MAIN, 2 = SUB
-    
-    @Column(unique = true, nullable = false, length = 10)
-    private String name; // "MAIN", "SUB"
-    
-    // Constructor for initialization
-    public PointType(Byte id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-}
-```
+### User Management Layer
 
-### Transaction Status Table (Normalized)
-```java
-@Entity
-@Table(name = "transaction_statuses")
-public class TransactionStatus {
-    @Id
-    private Byte id; // 1 = PENDING, 2 = CONFIRMED, 3 = FAILED
-    
-    @Column(unique = true, nullable = false, length = 20)
-    private String name; // "PENDING", "CONFIRMED", "FAILED"
-    
-    public TransactionStatus(Byte id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-}
-```
+#### User Entity
+**Location**: `user/entity/User.java`
 
-### Point Source Table (Normalized)
-```java
-@Entity
-@Table(name = "point_sources")
-public class PointSource {
-    @Id
-    private Byte id; // 1 = TASK_COMPLETION, 2 = EVENT_REWARD, 3 = ADMIN_GRANT
-    
-    @Column(unique = true, nullable = false, length = 50)
-    private String name; // "TASK_COMPLETION", "EVENT_REWARD", "ADMIN_GRANT"
-    
-    public PointSource(Byte id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-}
-```
+**Purpose**: Core user profile from Google OAuth authentication
 
-### Role Table (User Access Control)
-```java
-@Entity
-@Table(name = "roles")
-public class Role {
-    @Id
-    private Byte id; // 1 = ADMIN, 2 = USER
-    
-    @Column(unique = true, nullable = false, length = 10)
-    private String name; // "ADMIN", "USER"
-    
-    public Role(Byte id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-}
-```
+**Key Design Decisions:**
+- **UUID Primary Key**: Better for distributed systems than auto-increment integers
+- **Direct Role Reference**: `roleId` byte field instead of JPA relationship for performance  
+- **Google OAuth Integration**: `googleId` as unique business identifier
+- **Indexed Access**: Database index on `googleId` for fast lookups
 
-### Main Point Account Entity
-```java
-@Entity
-@Table(name = "main_point_accounts")
-public class MainPointAccount {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
-    @Column(name = "user_google_id", nullable = false, unique = true)
-    private String userGoogleId; // Direct reference to User.googleId
-    
-    @Column(nullable = false)
-    @Min(0)
-    private Integer balance = 0;
-    
-    @Column(nullable = false)
-    @Min(0)
-    private Integer totalEarned = 0;
-    
-    @Column(nullable = false)
-    @Min(0)
-    private Integer pointsToToken = 0;
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-}
-```
+#### Role Entity (Expandable Reference)
+**Location**: `user/entity/Role.java`
 
-### Sub Point Account Entity
-```java
-@Entity
-@Table(name = "sub_point_accounts")
-public class SubPointAccount {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
-    @Column(name = "user_google_id", nullable = false, unique = true)
-    private String userGoogleId; // Direct reference to User.googleId
-    
-    @Column(nullable = false)
-    @Min(0)
-    private Integer balance = 0;
-    
-    @Column(nullable = false)
-    @Min(0)
-    private Integer totalEarned = 0;
-    
-    @Column(nullable = false)
-    @Min(0)
-    private Integer subToMain = 0;
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
-}
-```
+**Purpose**: Expandable role system supporting future business growth
 
-### Point Earn Transaction Entity
-```java
-@Entity
-@Table(name = "point_earn_transactions", indexes = {
-    @Index(name = "idx_point_earn_user_date", columnList = "userGoogleId, createdAt"),
-    @Index(name = "idx_point_earn_type", columnList = "pointTypeId"),
-    @Index(name = "idx_point_earn_source", columnList = "sourceId")
-})
-public class PointEarnTransaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
-    @Column(name = "user_google_id", nullable = false)
-    private String userGoogleId; // Direct reference to User.googleId
-    
-    @Column(name = "point_type_id", nullable = false)
-    private Byte pointTypeId; // 1 = MAIN, 2 = SUB
-    
-    @Column(nullable = false)
-    @Min(1)
-    private Integer amount;
-    
-    @Column(name = "source_id", nullable = false)
-    private Byte sourceId; // 1 = TASK_COMPLETION, 2 = EVENT_REWARD, 3 = ADMIN_GRANT
-    
-    @Column(columnDefinition = "TEXT")
-    private String description;
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-}
-```
+**Business Flexibility**: 
+- Current: `{1: "ADMIN", 2: "USER"}`
+- Future: Can add `{3: "MODERATOR", 4: "PREMIUM"}` without schema changes
+- Database-driven role management without code deployment
 
-### Exchange Transaction Entity
-```java
-@Entity
-@Table(name = "exchange_transactions", indexes = {
-    @Index(name = "idx_exchange_user_date", columnList = "userGoogleId, createdAt"),
-    @Index(name = "idx_exchange_tx_hash", columnList = "txHash"),
-    @Index(name = "idx_exchange_status", columnList = "statusId")
-})
-public class ExchangeTransaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
-    @Column(name = "user_google_id", nullable = false)
-    private String userGoogleId; // Direct reference to User.googleId
-    
-    @Column(nullable = false)
-    @Min(10) // Minimum 10 points for 1 token
-    private Integer pointsSpent;
-    
-    @Column(nullable = false)
-    @Min(1)
-    private Integer tokensReceived;
-    
-    @Column(unique = true, length = 66)
-    private String txHash;
-    
-    @Column(name = "status_id", nullable = false)
-    private Byte statusId = 1; // 1 = PENDING, 2 = CONFIRMED, 3 = FAILED
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    private LocalDateTime confirmedAt;
-    
-    // Business rule validation
-    @PrePersist
-    @PreUpdate
-    private void validateExchangeRate() {
-        if (pointsSpent != tokensReceived * 10) {
-            throw new IllegalStateException("Exchange rate must be 10:1 (points:tokens)");
-        }
-    }
-}
-```
+### Points & Token Balance Layer
 
-### Conversion Transaction Entity (Fixed 10:1 Ratio)
-```java
-@Entity
-@Table(name = "conversion_transactions", indexes = {
-    @Index(name = "idx_conversion_user_date", columnList = "userGoogleId, createdAt")
-})
-public class ConversionTransaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
-    @Column(name = "user_google_id", nullable = false)
-    private String userGoogleId; // Direct reference to User.googleId
-    
-    @Column(nullable = false)
-    @Min(10) // Minimum 10 sub points for 1 main point
-    private Integer subPointsSpent;
-    
-    @Column(nullable = false)
-    @Min(1)
-    private Integer mainPointsReceived;
-    
-    @Column(nullable = false)
-    private Byte conversionRate = 10; // Always 10:1 (10 sub points = 1 main point)
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-    
-    // Business rule validation
-    @PrePersist
-    @PreUpdate
-    private void validateConversionRate() {
-        if (subPointsSpent != mainPointsReceived * 10) {
-            throw new IllegalStateException("Conversion rate must be 10:1 (sub:main)");
-        }
-    }
-}
-```
+#### UserPointToken Entity (Current Balances Only)
+**Location**: `userdetail/entity/UserPointToken.java`
 
-### Wallet Transaction Entity
-```java
-@Entity
-@Table(name = "wallet_transactions", indexes = {
-    @Index(name = "idx_wallet_tx_user_date", columnList = "userGoogleId, createdAt"),
-    @Index(name = "idx_wallet_tx_hash", columnList = "txHash"),
-    @Index(name = "idx_wallet_tx_block", columnList = "blockNumber")
-})
-public class WalletTransaction {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
-    @Column(name = "user_google_id", nullable = false)
-    private String userGoogleId; // Direct reference to User.googleId
-    
-    @Column(nullable = false, length = 20)
-    private String transactionType; // TOKEN_EXCHANGE, GOVERNANCE_VOTE
-    
-    @Column(nullable = false)
-    private Integer amount;
-    
-    @Column(nullable = false)
-    private Boolean gasSponsored = true;
-    
-    @Column(unique = true, length = 66)
-    private String txHash;
-    
-    private Long blockNumber;
-    
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-}
-```
+**Purpose**: Simple current balance tracking for user's points and tokens
 
-## Data Initialization (Reference Data & Demo Users)
+**Key Design Decisions:**
+- **No Historical Tracking**: Only current balances; history comes from PointTransaction queries
+- **Direct Google ID Reference**: Uses `userGoogleId` string field, not User entity relationship  
+- **Simple Balance Fields**: `mainPoint`, `subPoint`, `tokenBalance` - no cumulative totals
+- **Atomic Operations**: Business methods handle conversions and exchanges safely
+- **Validation Built-in**: Prevents negative balances and invalid operations
 
-```java
-@Component
-@Profile("!prod")
-public class DataInitializer {
-    
-    @Autowired
-    private PointTypeRepository pointTypeRepository;
-    
-    @Autowired
-    private TransactionStatusRepository transactionStatusRepository;
-    
-    @Autowired
-    private PointSourceRepository pointSourceRepository;
-    
-    @Autowired
-    private RoleRepository roleRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    @Autowired
-    private MainPointAccountRepository mainPointRepository;
-    
-    @Autowired
-    private SubPointAccountRepository subPointRepository;
-    
-    @EventListener(ApplicationReadyEvent.class)
-    public void initializeReferenceData() {
-        // Initialize Roles
-        if (roleRepository.count() == 0) {
-            roleRepository.save(new Role((byte) 1, "ADMIN"));
-            roleRepository.save(new Role((byte) 2, "USER"));
-        }
-        
-        // Initialize Point Types
-        if (pointTypeRepository.count() == 0) {
-            pointTypeRepository.save(new PointType((byte) 1, "MAIN"));
-            pointTypeRepository.save(new PointType((byte) 2, "SUB"));
-        }
-        
-        // Initialize Transaction Statuses
-        if (transactionStatusRepository.count() == 0) {
-            transactionStatusRepository.save(new TransactionStatus((byte) 1, "PENDING"));
-            transactionStatusRepository.save(new TransactionStatus((byte) 2, "CONFIRMED"));
-            transactionStatusRepository.save(new TransactionStatus((byte) 3, "FAILED"));
-        }
-        
-        // Initialize Point Sources
-        if (pointSourceRepository.count() == 0) {
-            pointSourceRepository.save(new PointSource((byte) 1, "TASK_COMPLETION"));
-            pointSourceRepository.save(new PointSource((byte) 2, "EVENT_REWARD"));
-            pointSourceRepository.save(new PointSource((byte) 3, "ADMIN_GRANT"));
-        }
-        
-        // Initialize Demo Users for Interview Demonstration
-        if (userRepository.count() == 0) {
-            // Create demo admin user
-            User adminUser = new User();
-            adminUser.setGoogleId("demo-admin-google-id");
-            adminUser.setEmail("admin@demo.com");
-            adminUser.setName("Demo Admin");
-            adminUser.setSmartWalletAddress("0x1234567890123456789012345678901234567890");
-            adminUser.setRoleId((byte) 1); // ADMIN role
-            User savedAdmin = userRepository.save(adminUser);
-            
-            // Create point accounts for admin
-            MainPointAccount adminMainPoints = new MainPointAccount();
-            adminMainPoints.setUserGoogleId(savedAdmin.getGoogleId());
-            adminMainPoints.setBalance(1000);
-            adminMainPoints.setTotalEarned(1000);
-            mainPointRepository.save(adminMainPoints);
-            
-            SubPointAccount adminSubPoints = new SubPointAccount();
-            adminSubPoints.setUserGoogleId(savedAdmin.getGoogleId());
-            adminSubPoints.setBalance(500);
-            adminSubPoints.setTotalEarned(500);
-            subPointRepository.save(adminSubPoints);
-            
-            // Create demo regular user
-            User regularUser = new User();
-            regularUser.setGoogleId("demo-user-google-id");
-            regularUser.setEmail("user@demo.com");
-            regularUser.setName("Demo User");
-            regularUser.setSmartWalletAddress("0x0987654321098765432109876543210987654321");
-            regularUser.setRoleId((byte) 2); // USER role (default)
-            User savedUser = userRepository.save(regularUser);
-            
-            // Create point accounts for regular user
-            MainPointAccount userMainPoints = new MainPointAccount();
-            userMainPoints.setUserGoogleId(savedUser.getGoogleId());
-            userMainPoints.setBalance(100);
-            userMainPoints.setTotalEarned(100);
-            mainPointRepository.save(userMainPoints);
-            
-            SubPointAccount userSubPoints = new SubPointAccount();
-            userSubPoints.setUserGoogleId(savedUser.getGoogleId());
-            userSubPoints.setBalance(200);
-            userSubPoints.setTotalEarned(200);
-            subPointRepository.save(userSubPoints);
-        }
-    }
-}
-```
+**Why This Design:**
+- **Performance**: No JPA relationship overhead
+- **Data Integrity**: Single source of truth for historical data (transaction tables)
+- **Simplicity**: Easy to understand and maintain
+- **Scalability**: No complex aggregate calculations at balance level
 
-## Constants for Reference IDs
+### Transaction Logging Layer
 
-```java
-public class DatabaseConstants {
-    
-    // Roles
-    public static final byte ROLE_ADMIN = 1;
-    public static final byte ROLE_USER = 2;
-    
-    // Point Types
-    public static final byte MAIN_POINT_TYPE = 1;
-    public static final byte SUB_POINT_TYPE = 2;
-    
-    // Transaction Statuses
-    public static final byte STATUS_PENDING = 1;
-    public static final byte STATUS_CONFIRMED = 2;
-    public static final byte STATUS_FAILED = 3;
-    
-    // Point Sources
-    public static final byte SOURCE_TASK_COMPLETION = 1;
-    public static final byte SOURCE_EVENT_REWARD = 2;
-    public static final byte SOURCE_ADMIN_GRANT = 3;
-    
-    // Fixed Conversion Rates
-    public static final byte SUB_TO_MAIN_RATE = 10; // 10 sub points = 1 main point
-    public static final byte MAIN_TO_TOKEN_RATE = 10; // 10 main points = 1 token
-}
-```
+#### PointTransaction Entity (Comprehensive Audit Trail)
+**Location**: `pointtransaction/entity/PointTransaction.java`
 
-## Repository Interfaces
+**Purpose**: Complete audit trail for all point operations with granular amount tracking
 
-```java
-@Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
-    Optional<User> findByGoogleId(String googleId);
-    Optional<User> findBySmartWalletAddress(String address);
-    List<User> findByRoleId(Byte roleId);
-    boolean existsByGoogleIdAndRoleId(String googleId, Byte roleId);
-}
+**Key Design Features:**
+- **Granular Amount Fields**: Separate fields for each operation type (`mainEarnAmount`, `subConvertedAmount`, etc.)
+- **Source Classification**: 12 predefined source types covering all business scenarios
+- **Transaction Lifecycle**: PENDING → CONFIRMED/FAILED status tracking
+- **Configurable Ratios**: Static configuration for conversion and exchange rates
+- **Database Optimization**: Strategic indexes on user/date/type/source for fast queries
 
-@Repository
-public interface RoleRepository extends JpaRepository<Role, Byte> {
-    Optional<Role> findByName(String name);
-}
+**Why Granular Amount Tracking:**
+- **Detailed Reporting**: Can answer "how many sub points were converted?" vs "how many main points were earned?"
+- **Business Intelligence**: Separate metrics for earning vs spending vs converting
+- **Audit Compliance**: Clear separation of different transaction types
+- **Query Performance**: Direct aggregation without complex calculations
 
-@Repository
-public interface MainPointAccountRepository extends JpaRepository<MainPointAccount, Integer> {
-    Optional<MainPointAccount> findByUserGoogleId(String userGoogleId);
-}
+#### TokenTransaction Entity (Blockchain Integration)  
+**Location**: `pointtransaction/entity/TokenTransaction.java`
 
-@Repository
-public interface SubPointAccountRepository extends JpaRepository<SubPointAccount, Integer> {
-    Optional<SubPointAccount> findByUserGoogleId(String userGoogleId);
-}
+**Purpose**: Track blockchain transactions for point-to-token exchanges
 
-@Repository
-public interface PointEarnTransactionRepository extends JpaRepository<PointEarnTransaction, Integer> {
-    Page<PointEarnTransaction> findByUserGoogleIdOrderByCreatedAtDesc(String userGoogleId, Pageable pageable);
-    List<PointEarnTransaction> findByUserGoogleIdAndPointTypeIdOrderByCreatedAtDesc(String userGoogleId, Byte pointTypeId);
-}
+**Integration Features:**
+- **zkSync Transaction Tracking**: Stores blockchain transaction hashes
+- **Exchange Rate Validation**: Enforces 10:1 ratio at database level
+- **Gas Sponsorship Tracking**: Records whether transaction was sponsored (always true for zkSync AA)
+- **Balance Application Status**: Tracks whether blockchain transaction was applied to UserPointToken balance
 
-@Repository
-public interface ExchangeTransactionRepository extends JpaRepository<ExchangeTransaction, Integer> {
-    Page<ExchangeTransaction> findByUserGoogleIdOrderByCreatedAtDesc(String userGoogleId, Pageable pageable);
-    List<ExchangeTransaction> findByStatusId(Byte statusId);
-}
+### Reference Data Layer
 
-@Repository
-public interface ConversionTransactionRepository extends JpaRepository<ConversionTransaction, Integer> {
-    Page<ConversionTransaction> findByUserGoogleIdOrderByCreatedAtDesc(String userGoogleId, Pageable pageable);
-}
-```
+#### PointEarnSpendSource Entity (Transaction Classification)
+**Location**: `global/entity/PointEarnSpendSource.java`
 
-## Service Layer Example with Role-Based Access Control
+**Purpose**: Predefined transaction source classification system
 
-```java
-@Service
-@Transactional
-public class PointService {
-    
-    @Autowired
-    private MainPointAccountRepository mainPointRepository;
-    
-    @Autowired
-    private SubPointAccountRepository subPointRepository;
-    
-    @Autowired
-    private PointEarnTransactionRepository earnTransactionRepository;
-    
-    @Autowired
-    private ConversionTransactionRepository conversionRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
-    
-    // Admin only - grant points to users
-    @PreAuthorize("hasRole('ADMIN')")
-    public void grantPointsToUser(String targetUserGoogleId, Byte pointTypeId, Integer amount, String description) {
-        earnPoints(targetUserGoogleId, pointTypeId, amount, DatabaseConstants.SOURCE_ADMIN_GRANT, description);
-    }
-    
-    // Admin only - promote user to admin
-    @PreAuthorize("hasRole('ADMIN')")
-    public void promoteUserToAdmin(String targetUserGoogleId) {
-        User user = userRepository.findByGoogleId(targetUserGoogleId)
-            .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        user.setRoleId(DatabaseConstants.ROLE_ADMIN);
-        userRepository.save(user);
-    }
-    
-    // Both admin and user can earn points through system actions
-    public void earnPoints(String userGoogleId, Byte pointTypeId, Integer amount, Byte sourceId, String description) {
-        // Record transaction
-        PointEarnTransaction transaction = new PointEarnTransaction();
-        transaction.setUserGoogleId(userGoogleId);
-        transaction.setPointTypeId(pointTypeId);
-        transaction.setAmount(amount);
-        transaction.setSourceId(sourceId);
-        transaction.setDescription(description);
-        earnTransactionRepository.save(transaction);
-        
-        // Update balance
-        if (pointTypeId == DatabaseConstants.MAIN_POINT_TYPE) {
-            MainPointAccount account = mainPointRepository.findByUserGoogleId(userGoogleId)
-                .orElseThrow(() -> new EntityNotFoundException("Main point account not found"));
-            account.setBalance(account.getBalance() + amount);
-            account.setTotalEarned(account.getTotalEarned() + amount);
-            mainPointRepository.save(account);
-        } else {
-            SubPointAccount account = subPointRepository.findByUserGoogleId(userGoogleId)
-                .orElseThrow(() -> new EntityNotFoundException("Sub point account not found"));
-            account.setBalance(account.getBalance() + amount);
-            account.setTotalEarned(account.getTotalEarned() + amount);
-            subPointRepository.save(account);
-        }
-    }
-    
-    public void convertSubToMainPoints(String userGoogleId, Integer subPoints) {
-        if (subPoints % DatabaseConstants.SUB_TO_MAIN_RATE != 0) {
-            throw new IllegalArgumentException("Sub points must be multiple of " + DatabaseConstants.SUB_TO_MAIN_RATE);
-        }
-        
-        Integer mainPointsToReceive = subPoints / DatabaseConstants.SUB_TO_MAIN_RATE;
-        
-        // Deduct sub points
-        SubPointAccount subAccount = subPointRepository.findByUserGoogleId(userGoogleId)
-            .orElseThrow(() -> new EntityNotFoundException("Sub point account not found"));
-        if (subAccount.getBalance() < subPoints) {
-            throw new IllegalStateException("Insufficient sub points");
-        }
-        subAccount.setBalance(subAccount.getBalance() - subPoints);
-        subAccount.setSubToMain(subAccount.getSubToMain() + subPoints);
-        subPointRepository.save(subAccount);
-        
-        // Add main points
-        MainPointAccount mainAccount = mainPointRepository.findByUserGoogleId(userGoogleId)
-            .orElseThrow(() -> new EntityNotFoundException("Main point account not found"));
-        mainAccount.setBalance(mainAccount.getBalance() + mainPointsToReceive);
-        mainAccount.setTotalEarned(mainAccount.getTotalEarned() + mainPointsToReceive);
-        mainPointRepository.save(mainAccount);
-        
-        // Record conversion transaction
-        ConversionTransaction conversion = new ConversionTransaction();
-        conversion.setUserGoogleId(userGoogleId);
-        conversion.setSubPointsSpent(subPoints);
-        conversion.setMainPointsReceived(mainPointsToReceive);
-        conversionRepository.save(conversion);
-    }
-}
-```
+**Business Model:**
+- **12 Source Types**: Covers all earning and spending scenarios
+- **MAIN Sources (1-6)**: Task completion, events, admin grants, exchanges
+- **SUB Sources (7-12)**: Task completion, events, admin grants, conversions
+- **Helper Methods**: Business logic for source type detection and validation
 
-## Database Design Benefits
+**Architectural Benefit**: Extensible classification system without code changes
 
-### Performance Optimizations:
-- **UUID Primary Keys**: Globally unique, suitable for distributed systems
-- **String Foreign Keys**: Direct Google ID references, no joins needed for user lookup
-- **Byte Lookup Tables**: Minimal storage for enum-like data
-- **Integer Point Values**: Sufficient for POC, easy arithmetic operations
-- **Strategic Indexing**: Optimized for common query patterns
+#### TransactionStatus Entity (Status Management)
+**Location**: `global/entity/TransactionStatus.java`
 
-### Business Logic Enforcement:
-- **JPA Validation**: @Min annotations prevent negative values
-- **Custom Validation**: @PrePersist/@PreUpdate enforce business rules
-- **Fixed Rates**: Hardcoded 10:1 ratios for simplicity and consistency
-- **Reference Data**: Normalized lookup tables for maintainability
+**Purpose**: Transaction lifecycle status tracking
 
-This design provides a clean, performant, and maintainable database structure perfect for your technical interview submission.
+**Status Model:**
+- **PENDING (1)**: Transaction initiated
+- **CONFIRMED (2)**: Successfully processed
+- **FAILED (3)**: Transaction failed or rolled back
+
+**Usage**: Both PointTransaction and TokenTransaction reference this for consistent status management
+
+## Architectural Design Patterns
+
+### 1. Performance-First Data Relations
+**googleId String References**: Instead of traditional JPA foreign keys, uses Google OAuth ID strings
+- **Benefits**: Eliminates JPA relationship overhead, faster queries, better caching
+- **Trade-off**: Manual relationship management vs automatic ORM benefits
+- **Why Chosen**: Google OAuth provides stable, unique identifiers perfect for this pattern
+
+### 2. Current State + Transaction Log Architecture  
+**Separation of Concerns**: UserPointToken stores only current balances; PointTransaction stores complete history
+- **Benefits**: Fast balance queries, complete audit trail, simplified balance updates
+- **Pattern**: Event Sourcing lite - current state derived from transaction sequence
+- **Scalability**: Historical queries can be moved to separate read replicas
+
+### 3. Reference Data Strategy
+**Byte ID Lookups**: PointEarnSpendSource and TransactionStatus use 1-byte primary keys
+- **Storage Efficiency**: 1 byte vs 4-8 bytes for traditional integer keys
+- **Business Flexibility**: New sources/statuses added via database, not code deployment  
+- **Query Performance**: Small lookup tables with predictable access patterns
+
+### 4. Transaction Lifecycle Management
+**Three-Phase Commit Pattern**: PENDING → Apply Changes → CONFIRMED/FAILED
+- **Data Integrity**: Rollback capability if balance updates fail
+- **Audit Trail**: Complete visibility into transaction success/failure
+- **Business Logic**: Handles complex scenarios like insufficient balance gracefully
+
+## Technical Implementation Insights
+
+### Database Environment Strategy
+**Development**: H2 in-memory database with console access for rapid prototyping
+**Production**: PostgreSQL with connection pooling and transaction isolation
+
+**Key Configuration Files:**
+- `application-dev.yml` - H2 setup with console access at `/h2-console`
+- `application-prod.yml` - PostgreSQL with environment variable configuration
+
+### Repository Layer Architecture
+**Location**: Each entity package contains its repository interface
+
+**Design Philosophy**: 
+- **Method Naming Conventions**: Spring Data JPA query derivation from method names
+- **Custom Queries**: `@Query` annotations for complex aggregations and business logic
+- **Pagination Support**: All list operations support `Pageable` parameters for performance
+- **Statistical Queries**: Database-level aggregations for reporting and analytics
+
+**Key Repository Features:**
+- **UserRepository**: GoogleId-based lookups, role filtering
+- **UserPointTokenRepository**: Balance retrieval by googleId
+- **PointTransactionRepository**: Comprehensive transaction history with filtering, aggregations, and business intelligence queries
+
+### Query Optimization Strategy
+**Strategic Indexing**: Database indexes on frequently accessed columns
+- User: `googleId` for OAuth lookups  
+- PointTransaction: `(userGoogleId, createdAt)`, `pointTypeId`, `sourceId`
+- TokenTransaction: `(userGoogleId, createdAt)`, `txHash`, `transactionStatusId`
+
+**Aggregation Performance**: Custom `@Query` annotations push calculations to database level instead of application memory
+
+## Service Layer Integration
+
+### Business Logic Architecture
+**Location**: Each domain package contains its service classes
+
+**Service Design Patterns:**
+- **UserService**: OAuth user lifecycle, role management, profile updates
+- **UserPointTokenService**: Current balance operations, atomic conversions/exchanges
+- **PointTransactionService**: Transaction lifecycle management, historical queries, business intelligence
+
+### Transaction Coordination Pattern
+**Three-Layer Architecture**: Controller → Service → Repository
+
+**PointTransactionService Integration:**
+1. **Transaction Creation**: Creates PENDING PointTransaction record
+2. **Balance Application**: Calls UserPointTokenService for atomic balance updates  
+3. **Status Confirmation**: Updates transaction to CONFIRMED/FAILED based on success
+4. **Audit Completion**: Comprehensive logging with error handling and rollback
+
+## Strategic Design Decisions
+
+### 1. Simplified Balance Model
+**Single UserPointToken Entity**: Instead of separate account entities per point type
+- **Reasoning**: Reduces join complexity, enables atomic cross-point-type operations
+- **Trade-off**: Less normalized but significantly better performance
+- **Result**: Simple balance queries, atomic conversions, easier service logic
+
+### 2. Historical Data Strategy  
+**Transaction Log as Source of Truth**: Current balances + complete transaction history
+- **Pattern**: Event Sourcing principles without full CQRS complexity
+- **Benefits**: Complete audit trail, point-in-time balance calculation, business intelligence
+- **Scalability**: Historical queries can be optimized separately from balance queries
+
+### 3. String-based Relationships
+**GoogleId References**: Avoids traditional JPA entity relationships
+- **Performance**: Eliminates ORM overhead for high-frequency operations
+- **Simplicity**: Direct string matching in queries vs complex join operations
+- **OAuth Alignment**: Uses Google's stable identifier as natural foreign key
+
+### 4. Reference Data Flexibility
+**Database-Driven Configuration**: PointEarnSpendSource, TransactionStatus, Role as entities
+- **Business Agility**: New sources/statuses/roles without code deployment
+- **Consistency**: Centralized lookup data with referential integrity
+- **Evolution**: System can grow with business requirements without schema migrations
+
+## Implementation Status & Future Evolution
+
+### Current State
+**Robust Foundation**: Complete entity layer with sophisticated transaction management, OAuth integration, and performance-optimized queries ready for production scale.
+
+**Key Capabilities**: 
+- User authentication and role management
+- Comprehensive point system with audit trails  
+- Transaction lifecycle management with rollback capabilities
+- Business intelligence queries for reporting and analytics
+
+### Next Development Phases
+**Blockchain Integration**: TokenTransaction entity ready for zkSync smart contract coordination
+**API Layer**: Service layer complete and ready for REST controller implementation  
+**Production Scaling**: PostgreSQL migration with connection pooling and transaction isolation
+
+### Architectural Benefits Achieved
+**Performance**: Optimized for high-frequency balance operations with minimal database overhead
+**Auditability**: Complete transaction history with granular amount tracking for compliance
+**Scalability**: Event sourcing patterns support read replicas and analytical workloads
+**Flexibility**: Reference data strategy enables business rule evolution without deployment cycles
+
+This database architecture provides a solid foundation for Web2/Web3 hybrid operations with excellent performance, maintainability, and business agility characteristics.
