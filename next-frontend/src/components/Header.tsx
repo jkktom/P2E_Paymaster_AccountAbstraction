@@ -8,7 +8,7 @@ interface HeaderProps {
 }
 
 export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
-  const { user, isAuthenticated, signOut, isLoading } = useAuth()
+  const { user, balance, isAuthenticated, signOut, isLoading } = useAuth()
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
@@ -67,15 +67,15 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
               <div className="hidden md:flex items-center space-x-3 text-sm">
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">메인:</span>
-                  <span className="font-medium text-gray-900">0</span>
+                  <span className="font-medium text-gray-900">{balance?.mainPoint || 0}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">서브:</span>
-                  <span className="font-medium text-gray-900">0</span>
+                  <span className="font-medium text-gray-900">{balance?.subPoint || 0}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">토큰:</span>
-                  <span className="font-medium text-gray-900">0</span>
+                  <span className="font-medium text-gray-900">{balance?.tokenBalance || 0}</span>
                 </div>
               </div>
               

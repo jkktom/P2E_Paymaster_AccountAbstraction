@@ -148,12 +148,14 @@ WalletTransaction: {
 ## Detailed Documentation
 
 For comprehensive technical details, see:
-- **[API Documentation](./claudemds/CLAUDE-API.md)** - Complete API endpoint specifications
+- **[API Documentation](./claudemds/CLAUDE-API.md)** - Current implementation & planned expansion of REST API endpoints
+- **[OAuth2 Authentication](./claudemds/CLAUDE-OAUTH2.md)** - Google OAuth2 + JWT authentication architecture analysis
+- **[Backend Architecture](./claudemds/CLAUDE-BACKEND.md)** - Spring Boot backend design philosophy & implementation strategy
+- **[Database Design](./claudemds/CLAUDE-DATABASE.md)** - Database architecture & performance-optimized data patterns
+- **[Smart Contract Architecture](./claudemds/CLAUDE-CONTRACTS.md)** - Hybrid Web2/Web3 governance system design
+- **[System Architecture](./claudemds/CLAUDE-ARCHITECTURE.md)** - Hybrid backend + blockchain architectural decisions
 - **[Frontend Architecture](./claudemds/CLAUDE-FRONTEND.md)** - Frontend application structure and components
-- **[Technical Architecture](./claudemds/CLAUDE-ARCHITECTURE.md)** - Technical decisions and architecture analysis
 - **[Testing Strategy](./claudemds/CLAUDE-TESTING.md)** - Comprehensive testing strategy and approaches
-- **[Database Design](./claudemds/CLAUDE-DATABASE.md)** - Database design and JPA entity specifications
-- **[Smart Contracts](./claudemds/CLAUDE-CONTRACTS.md)** - Solidity governance token with voting functionality
 - **[Deployment Guide](./claudemds/CLAUDE-DEPLOYMENT.md)** - Jenkins CI/CD deployment on single AWS Ubuntu instance
 - **[Setup Guide](./claudemds/CLAUDE-SETUP.md)** - Development environment setup guide
 

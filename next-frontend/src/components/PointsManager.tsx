@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { pointsAPI, exchangeAPI } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 import type { MainPointAccount, SubPointAccount, TransactionStatus, User } from '@/types'
 
 interface PointsManagerProps {
@@ -9,6 +10,7 @@ interface PointsManagerProps {
 }
 
 export default function PointsManager({ user }: PointsManagerProps) {
+  const { refreshBalance } = useAuth()
   const [mainPoints, setMainPoints] = useState<MainPointAccount | null>(null)
   const [subPoints, setSubPoints] = useState<SubPointAccount | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -33,6 +35,27 @@ export default function PointsManager({ user }: PointsManagerProps) {
   }
 
   // Simulate point earning for demo - calls backend admin API
+  const earnMainPoints = async (amount: number = 10) => {
+    setIsLoading(true)
+    setTxStatus({ status: 'pending' })
+
+    try {
+      // Call backend API to grant points (for demo purposes using admin endpoint)
+      await pointsAPI.earnDemoPoints('MAIN', amount)
+      setTxStatus({ status: 'success' })
+      await fetchPointsData()
+      await refreshBalance() // Update header balance
+    } catch (error: any) {
+      console.error('Failed to earn main points:', error)
+      setTxStatus({ 
+        status: 'error', 
+        error: error.response?.data?.message || 'Failed to earn main points' 
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const earnSubPoints = async (amount: number = 10) => {
     setIsLoading(true)
     setTxStatus({ status: 'pending' })
@@ -42,6 +65,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
       await pointsAPI.earnDemoPoints('SUB', amount)
       setTxStatus({ status: 'success' })
       await fetchPointsData()
+      await refreshBalance() // Update header balance
     } catch (error: any) {
       console.error('Failed to earn sub points:', error)
       setTxStatus({ 
@@ -65,6 +89,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
       await pointsAPI.convertSubToMain(10)
       setTxStatus({ status: 'success' })
       await fetchPointsData()
+      await refreshBalance() // Update header balance
     } catch (error: any) {
       console.error('Failed to convert points:', error)
       setTxStatus({ 
@@ -137,6 +162,14 @@ export default function PointsManager({ user }: PointsManagerProps) {
 
       {/* Action Buttons */}
       <div className="space-y-3">
+        <button
+          onClick={() => earnMainPoints(10)}
+          disabled={isLoading}
+          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Earn 10 Main Points (Demo)
+        </button>
+
         <button
           onClick={() => earnSubPoints(10)}
           disabled={isLoading}

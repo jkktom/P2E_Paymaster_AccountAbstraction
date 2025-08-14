@@ -2,15 +2,17 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
 import { authAPI, getStoredToken } from '@/lib/api'
-import type { User } from '@/types'
+import type { User, UserBalance } from '@/types'
 
 interface AuthContextType {
   user: User | null
+  balance: UserBalance | null
   isLoading: boolean
   isAuthenticated: boolean
   signIn: (googleToken: string) => Promise<void>
   demoSignIn: (userType: 'admin' | 'user') => Promise<void>
   signOut: () => void
+  refreshBalance: () => Promise<void>
   error: string | null
 }
 
@@ -18,6 +20,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
+  const [balance, setBalance] = useState<UserBalance | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tokenCheckTrigger, setTokenCheckTrigger] = useState(0)
@@ -39,6 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (response.success && response.user) {
             console.log('✅ User authenticated:', response.user.name)
             setUser(response.user)
+            if (response.balance) {
+              setBalance(response.balance)
+            }
           } else {
             throw new Error('Invalid response format')
           }
@@ -117,18 +123,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = () => {
     authAPI.signOut()
     setUser(null)
+    setBalance(null)
     setError(null)
+  }
+
+  const refreshBalance = async () => {
+    if (user) {
+      try {
+        const response = await authAPI.getProfile()
+        if (response.success && response.balance) {
+          setBalance(response.balance)
+        }
+      } catch (err) {
+        console.error('Failed to refresh balance:', err)
+      }
+    }
   }
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        balance,
         isLoading,
         isAuthenticated: !!user,
         signIn,
         demoSignIn,
         signOut,
+        refreshBalance,
         error,
       }}
     >

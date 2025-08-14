@@ -127,7 +127,15 @@ public class AuthController {
 
         String email = jwtService.extractEmail(oldToken);
         String name = jwtService.extractName(oldToken);
-        String newToken = jwtService.generateToken(googleId, email, name);
+        Byte roleId = jwtService.extractRoleId(oldToken);
+        
+        // If roleId is not in old token, fetch from database (for backward compatibility)
+        if (roleId == null) {
+            Optional<User> userOpt = userService.findByGoogleId(googleId);
+            roleId = userOpt.map(User::getRoleId).orElse((byte) 2); // Default to USER role
+        }
+        
+        String newToken = jwtService.generateToken(googleId, email, name, roleId);
 
         return ResponseEntity.ok(AuthResponse.builder()
             .success(true)

@@ -1,11 +1,19 @@
 export interface User {
-  id: string
+  id?: string
   googleId: string
   email: string
   name: string
   avatar?: string
+  roleId: number
   smartWalletAddress?: string
   createdAt: string
+}
+
+export interface UserBalance {
+  mainPoint: number
+  subPoint: number
+  tokenBalance: number
+  updatedAt?: string
 }
 
 export interface PointAccount {

@@ -51,7 +51,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             log.info("OAuth2 authentication success for user: {} ({})", name, email);
 
             User user = userService.createOrUpdateUser(googleId, email, name, avatar);
-            String jwtToken = jwtService.generateToken(googleId, email, name);
+            String jwtToken = jwtService.generateToken(googleId, email, name, user.getRoleId());
 
             UserResponse userResponse = UserResponse.builder()
                 .googleId(user.getGoogleId())
