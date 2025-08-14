@@ -127,38 +127,6 @@ export default function Home() {
           {/* POINTS Section */}
           <section className="mb-12">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              {/* Point Earning Buttons */}
-              <div className="space-y-6">
-                <div className="bg-white rounded-lg shadow-md p-6" id="earn-sub-10">
-                  <h3 className="text-lg font-semibold text-orange-600 mb-4">🎁 포인트 받기 (테스트용)</h3>
-                  <div className="space-y-3">
-                    <button className="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors">
-                      서브포인트 +10 받기 🎁
-                    </button>
-                    <button className="w-full px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors" id="earn-sub-50">
-                      서브포인트 +50 받기 🎁
-                    </button>
-                    <button className="w-full px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors" id="earn-main-5">
-                      메인포인트 +5 받기 ⭐
-                    </button>
-                  </div>
-                </div>
-
-                {/* Point Conversion */}
-                <div className="bg-white rounded-lg shadow-md p-6" id="convert-sub-main">
-                  <h3 className="text-lg font-semibold text-orange-600 mb-4">🔄 포인트 변환</h3>
-                  <div className="space-y-4">
-                    <div className="p-4 bg-orange-50 rounded-lg">
-                      <h4 className="font-medium mb-2">서브 → 메인 포인트</h4>
-                      <p className="text-sm text-gray-600 mb-3">100 서브포인트 = 10 메인포인트</p>
-                      <button className="w-full px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors">
-                        100 서브포인트 → 10 메인포인트로 변환
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Point Balance & Points Manager */}
               <div className="space-y-6">
                 <div className="bg-white rounded-lg shadow-md p-6" id="point-balance">
@@ -179,12 +147,7 @@ export default function Home() {
                   <PointsManager user={user} />
                 </div>
               </div>
-            </div>
-          </section>
 
-          {/* TOKEN Section */}
-          <section className="mb-12">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               {/* Token Exchange */}
               <div className="space-y-6">
                 <div className="bg-white rounded-lg shadow-md p-6" id="exchange-main-token">
@@ -192,9 +155,7 @@ export default function Home() {
                   <div className="p-4 bg-green-50 rounded-lg">
                     <h4 className="font-medium mb-2">메인포인트 → 거버넌스토큰</h4>
                     <p className="text-sm text-gray-600 mb-3">10 메인포인트 = 1 거버넌스토큰 (가스비 무료!)</p>
-                    <button className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors">
-                      10 메인포인트 → 1 거버넌스토큰으로 교환 (가스리스) ⚡
-                    </button>
+                    <p className="text-xs text-gray-500 mb-3">포인트 매니저에서 토큰 교환을 진행하세요</p>
                   </div>
                 </div>
 
@@ -215,7 +176,12 @@ export default function Home() {
                   )}
                 </div>
               </div>
+            </div>
+          </section>
 
+          {/* TOKEN Section */}
+          <section className="mb-12">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               {/* Token Balance */}
               <div className="space-y-6">
                 <div className="bg-white rounded-lg shadow-md p-6" id="token-balance">
@@ -229,12 +195,7 @@ export default function Home() {
 
                 <WalletConnect onWalletChange={handleWalletChange} />
               </div>
-            </div>
-          </section>
 
-          {/* VOTE Section */}
-          <section className="mb-12">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               {/* Voting Power & Proposals */}
               <div className="space-y-6">
                 <div className="bg-white rounded-lg shadow-md p-6" id="voting-power">
