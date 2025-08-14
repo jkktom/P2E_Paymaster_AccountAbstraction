@@ -83,11 +83,18 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
               <div className="flex items-center space-x-3">
                 <div className="text-right">
                   <p className="font-medium text-sm">{user.name}</p>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    user.roleId === 1 ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {user.roleId === 1 ? '관리자' : '사용자'}
-                  </span>
+                  <div className="flex flex-col space-y-1">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                      user.roleId === 1 ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {user.roleId === 1 ? '관리자' : '사용자'}
+                    </span>
+                    {user.smartWalletAddress && (
+                      <span className="text-xs text-gray-600 font-mono">
+                        {user.smartWalletAddress.slice(0, 6)}...{user.smartWalletAddress.slice(-4)}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button
                   onClick={signOut}

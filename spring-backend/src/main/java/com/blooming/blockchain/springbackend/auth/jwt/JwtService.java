@@ -46,6 +46,20 @@ public class JwtService {
         return createToken(claims, googleId);
     }
 
+    // Generate JWT token for user with role and smart wallet address
+    public String generateToken(String googleId, String email, String name, Byte roleId, String smartWalletAddress) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("email", email);
+        claims.put("name", name);
+        claims.put("googleId", googleId);
+        claims.put("roleId", roleId);
+        if (smartWalletAddress != null && !smartWalletAddress.trim().isEmpty()) {
+            claims.put("smartWalletAddress", smartWalletAddress);
+        }
+        
+        return createToken(claims, googleId);
+    }
+
     // Create JWT token with claims
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
@@ -86,6 +100,11 @@ public class JwtService {
             }
             return null;
         });
+    }
+
+    // Extract smart wallet address from token
+    public String extractSmartWalletAddress(String token) {
+        return extractClaim(token, claims -> claims.get("smartWalletAddress", String.class));
     }
 
     // Extract expiration date from token

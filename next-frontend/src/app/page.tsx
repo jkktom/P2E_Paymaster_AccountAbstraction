@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import GoogleAuth from '@/components/GoogleAuthBackend'
 import PointsManager from '@/components/PointsManager'
-import WalletConnect from '@/components/WalletConnect'
+import SmartWallet from '@/components/SmartWallet'
 import GovernanceVoting from '@/components/GovernanceVoting'
 import type { WalletState } from '@/types'
 
@@ -193,7 +193,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <WalletConnect onWalletChange={handleWalletChange} />
+                <SmartWallet />
               </div>
 
               {/* Voting Power & Proposals */}

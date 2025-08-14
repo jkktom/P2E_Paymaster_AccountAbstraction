@@ -3,6 +3,7 @@ package com.blooming.blockchain.springbackend.user.service;
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.repository.UserRepository;
 import com.blooming.blockchain.springbackend.userdetail.service.UserPointTokenService;
+import com.blooming.blockchain.springbackend.zksync.service.ZkSyncService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserPointTokenService userPointTokenService;
+    private final ZkSyncService zkSyncService;
 
     // Create or update user from OAuth2 login
     public User createOrUpdateUser(String googleId, String email, String name, String avatar) {
@@ -42,6 +44,15 @@ public class UserService {
                 updated = true;
             }
 
+            // Create smart wallet if user doesn't have one
+            if (!user.hasSmartWallet()) {
+                log.info("Creating smart wallet for existing user: {} ({})", name, email);
+                ZkSyncService.SmartWallet smartWallet = zkSyncService.createSmartWallet(email);
+                user.setSmartWalletAddress(smartWallet.getAddress());
+                updated = true;
+                log.info("Added smart wallet to existing user: {} -> {}", email, smartWallet.getAddress());
+            }
+
             if (updated) {
                 user = userRepository.save(user);
                 log.info("Updated existing user: {} ({})", name, email);
@@ -51,12 +62,17 @@ public class UserService {
 
             return user;
         } else {
-            // Create new user
+            // Create smart wallet for new user
+            log.info("Creating smart wallet for new user: {} ({})", name, email);
+            ZkSyncService.SmartWallet smartWallet = zkSyncService.createSmartWallet(email);
+            
+            // Create new user with smart wallet
             User newUser = User.builder()
                     .googleId(googleId)
                     .email(email)
                     .name(name)
                     .avatar(avatar)
+                    .smartWalletAddress(smartWallet.getAddress())
                     .roleId((byte) 2) // Default USER role
                     .build();
 
@@ -65,6 +81,7 @@ public class UserService {
             // Initialize user point balance (0, 0, 0)
             userPointTokenService.getOrCreateUserBalance(googleId);
 
+            log.info("Created new user with smart wallet: {} -> {}", email, smartWallet.getAddress());
             return newUser;
         }
     }

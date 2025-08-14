@@ -54,6 +54,8 @@ public class SecurityConfig {
                     "/api/auth/login/**",
                     "/api/auth/google",
                     "/api/auth/validate",
+                    "/api/zksync/test/**",  // Allow test endpoints for development
+                    "/api/zksync/paymaster/status",  // Allow paymaster status check
                     "/public/**",
                     "/actuator/health",
                     "/h2-console/**",

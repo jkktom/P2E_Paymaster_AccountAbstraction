@@ -58,6 +58,7 @@ public class AuthController {
             .email(user.getEmail())
             .name(user.getName())
             .avatar(user.getAvatar())
+            .smartWalletAddress(user.getSmartWalletAddress())
             .roleId(user.getRoleId())
             .createdAt(user.getCreatedAt())
             .build();
@@ -96,6 +97,8 @@ public class AuthController {
             .googleId(googleId)
             .email(jwtService.extractEmail(token))
             .name(jwtService.extractName(token))
+            .smartWalletAddress(jwtService.extractSmartWalletAddress(token))
+            .roleId(jwtService.extractRoleId(token))
             .build();
 
         return ResponseEntity.ok(ValidateResponse.builder()
@@ -128,14 +131,23 @@ public class AuthController {
         String email = jwtService.extractEmail(oldToken);
         String name = jwtService.extractName(oldToken);
         Byte roleId = jwtService.extractRoleId(oldToken);
+        String smartWalletAddress = jwtService.extractSmartWalletAddress(oldToken);
         
-        // If roleId is not in old token, fetch from database (for backward compatibility)
-        if (roleId == null) {
-            Optional<User> userOpt = userService.findByGoogleId(googleId);
-            roleId = userOpt.map(User::getRoleId).orElse((byte) 2); // Default to USER role
+        // Fetch from database for backward compatibility or missing fields
+        Optional<User> userOpt = userService.findByGoogleId(googleId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (roleId == null) {
+                roleId = user.getRoleId();
+            }
+            if (smartWalletAddress == null) {
+                smartWalletAddress = user.getSmartWalletAddress();
+            }
+        } else {
+            roleId = (byte) 2; // Default to USER role
         }
         
-        String newToken = jwtService.generateToken(googleId, email, name, roleId);
+        String newToken = jwtService.generateToken(googleId, email, name, roleId, smartWalletAddress);
 
         return ResponseEntity.ok(AuthResponse.builder()
             .success(true)

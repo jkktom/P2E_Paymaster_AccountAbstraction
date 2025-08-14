@@ -34,6 +34,8 @@ public class User {
     @Column(name = "avatar", length = 500)
     private String avatar;
 
+    @Column(name = "smart_wallet_address", length = 42, unique = true)
+    private String smartWalletAddress;
 
     @Column(name = "role_id", nullable = false)
     private Byte roleId;
@@ -53,5 +55,9 @@ public class User {
 
     public boolean isUser() {
         return this.roleId == 2;
+    }
+
+    public boolean hasSmartWallet() {
+        return this.smartWalletAddress != null && !this.smartWalletAddress.trim().isEmpty();
     }
 }

@@ -56,3 +56,34 @@ export interface TransactionStatus {
   status: 'pending' | 'success' | 'error'
   error?: string
 }
+
+export interface SmartWalletBalance {
+  address: string
+  ethBalance: string
+  ethBalanceFormatted: string
+  governanceTokenBalance: string
+  governanceTokenBalanceFormatted: string
+}
+
+export interface PaymasterInfo {
+  address: string
+  balance: string
+  balanceInEth: string
+  isActive: boolean
+  governanceTokenAddress: string
+}
+
+export interface WalletSummary {
+  wallet: {
+    address: string
+    ethBalance: string
+    governanceTokenBalance: string
+    isPaymasterEligible: boolean
+  }
+  paymaster: {
+    address: string
+    balance: string
+    isActive: boolean
+  }
+  canPerformGaslessTransactions: boolean
+}

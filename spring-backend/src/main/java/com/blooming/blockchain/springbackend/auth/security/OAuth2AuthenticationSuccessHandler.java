@@ -51,13 +51,16 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             log.info("OAuth2 authentication success for user: {} ({})", name, email);
 
             User user = userService.createOrUpdateUser(googleId, email, name, avatar);
-            String jwtToken = jwtService.generateToken(googleId, email, name, user.getRoleId());
+            String jwtToken = jwtService.generateToken(googleId, email, name, user.getRoleId(), user.getSmartWalletAddress());
 
             UserResponse userResponse = UserResponse.builder()
                 .googleId(user.getGoogleId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .avatar(user.getAvatar())
+                .smartWalletAddress(user.getSmartWalletAddress())
+                .roleId(user.getRoleId())
+                .createdAt(user.getCreatedAt())
                 .build();
 
             AuthResponse authResponse = AuthResponse.builder()
