@@ -179,7 +179,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
     return (
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-4">Governance Voting</h2>
-        <p className="text-gray-600">Please connect your wallet to participate in governance.</p>
+        <p>Please connect your wallet to participate in governance.</p>
       </div>
     )
   }
@@ -194,7 +194,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
         <p className="text-2xl font-bold text-purple-600">
           {(parseFloat(votingPower) / 1e18).toFixed(2)} BLOOM
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm">
           Wallet: {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
         </p>
         {parseFloat(votingPower) === 0 && (
@@ -229,7 +229,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
           </button>
         </div>
         {parseFloat(votingPower) === 0 && (
-          <p className="text-xs text-gray-500 mt-2">You need voting power to create proposals</p>
+          <p className="text-xs mt-2">You need voting power to create proposals</p>
         )}
       </div>
 
@@ -237,7 +237,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
       <div>
         <h3 className="font-medium mb-3">Active Proposals</h3>
         {proposals.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">No proposals found. Create the first one!</p>
+          <p className="text-center py-4">No proposals found. Create the first one!</p>
         ) : (
           <div className="space-y-4">
             {proposals.map((proposal) => {
@@ -263,7 +263,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
                     </span>
                   </div>
 
-                  <div className="text-sm text-gray-600 mb-3">
+                  <div className="text-sm mb-3">
                     <p>Proposer: {proposal.proposer.slice(0, 10)}...{proposal.proposer.slice(-8)}</p>
                     <p>Deadline: {new Date(proposal.deadline * 1000).toLocaleDateString()}</p>
                   </div>
@@ -322,7 +322,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
             {txStatus.status === 'error' && `❌ ${txStatus.error}`}
           </div>
           {txStatus.hash && (
-            <p className="text-xs text-gray-600 mt-1 font-mono">
+            <p className="text-xs mt-1 font-mono">
               Tx: {txStatus.hash.slice(0, 10)}...{txStatus.hash.slice(-8)}
             </p>
           )}
@@ -330,7 +330,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
       )}
 
       {/* Info */}
-      <div className="mt-6 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+      <div className="mt-6 text-xs bg-gray-50 p-3 rounded">
         <p><strong>Note:</strong> All governance transactions are gasless via zkSync paymaster.</p>
         <p>• Voting power requires delegation (click "Delegate to Self" if you have tokens)</p>
         <p>• Proposals require minimum voting power to create</p>

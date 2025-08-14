@@ -36,7 +36,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
             aria-label="Close sidebar"
         >
             <svg
-            className="w-4 h-4 text-gray-600"
+            className="w-4 h-4"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -62,7 +62,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
             
             {/* Point Earning */}
             <div className="ml-2 space-y-1">
-              <p className="text-xs text-gray-500 px-3 py-1">포인트 받기</p>
+              <p className="text-xs px-3 py-1">포인트 받기</p>
               <a 
                 href="#earn-sub-10" 
                 onClick={() => setIsMobileOpen(false)}
@@ -91,7 +91,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
 
             {/* Point Conversion */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs text-gray-500 px-3 py-1">포인트 변환</p>
+              <p className="text-xs px-3 py-1">포인트 변환</p>
               <a 
                 href="#convert-sub-main" 
                 onClick={() => setIsMobileOpen(false)}
@@ -104,7 +104,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
 
             {/* Balance Display */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs text-gray-500 px-3 py-1">내 잔액</p>
+              <p className="text-xs px-3 py-1">내 잔액</p>
               <a 
                 href="#point-balance" 
                 onClick={() => setIsMobileOpen(false)}
@@ -124,7 +124,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
             
             {/* Token Exchange */}
             <div className="ml-2 space-y-1">
-              <p className="text-xs text-gray-500 px-3 py-1">토큰 교환 (가스리스)</p>
+              <p className="text-xs px-3 py-1">토큰 교환 (가스리스)</p>
               <a 
                 href="#exchange-main-token" 
                 onClick={() => setIsMobileOpen(false)}
@@ -137,7 +137,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
 
             {/* Token Balance */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs text-gray-500 px-3 py-1">토큰 잔액</p>
+              <p className="text-xs px-3 py-1">토큰 잔액</p>
               <a 
                 href="#token-balance" 
                 onClick={() => setIsMobileOpen(false)}
@@ -150,7 +150,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
 
             {/* Wallet Info */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs text-gray-500 px-3 py-1">지갑 정보</p>
+              <p className="text-xs px-3 py-1">지갑 정보</p>
               <a 
                 href="#wallet-info" 
                 onClick={() => setIsMobileOpen(false)}
@@ -162,7 +162,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
             </div>
             {/* Vote */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs text-gray-500 px-3 py-1">투표 참여  </p>
+              <p className="text-xs px-3 py-1">투표 참여  </p>
               <a 
                 href="#vote" 
                 onClick={() => setIsMobileOpen(false)}
@@ -183,7 +183,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
               
               {/* Voting Power */}
               <div className="ml-2 space-y-1">
-                <p className="text-xs text-gray-500 px-3 py-1">투표 권한</p>
+                <p className="text-xs px-3 py-1">투표 권한</p>
                 <a 
                   href="#voting-power" 
                   onClick={() => setIsMobileOpen(false)}
@@ -196,7 +196,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
 
               {/* Proposals */}
               <div className="ml-2 space-y-1 pt-2">
-                <p className="text-xs text-gray-500 px-3 py-1">거버넌스 제안</p>
+                <p className="text-xs px-3 py-1">거버넌스 제안</p>
                 <a 
                   href="#proposals" 
                   onClick={() => setIsMobileOpen(false)}
@@ -209,7 +209,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
 
               {/* Voting Buttons */}
               <div className="ml-2 space-y-1 pt-2">
-                <p className="text-xs text-gray-500 px-3 py-1">투표 참여 (가스리스)</p>
+                <p className="text-xs px-3 py-1">투표 참여 (가스리스)</p>
                 <a 
                   href="#vote-buttons" 
                   onClick={() => setIsMobileOpen(false)}
@@ -223,7 +223,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
               {/* Create Proposal (Admin only) */}
               {user.roleId === 1 && (
                 <div className="ml-2 space-y-1 pt-2">
-                  <p className="text-xs text-gray-500 px-3 py-1">관리자 기능</p>
+                  <p className="text-xs px-3 py-1">관리자 기능</p>
                   <a 
                     href="#create-proposal" 
                     onClick={() => setIsMobileOpen(false)}
@@ -248,7 +248,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 </span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">
+                <p className="text-sm font-medium truncate">
                   {user.name}
                 </p>
                 <div className="flex items-center mt-1">

@@ -81,7 +81,7 @@ export default function WalletConnect({ onWalletChange }: WalletConnectProps) {
         </button>
       ) : (
         <div className="text-center">
-          <p className="text-sm text-gray-600 mb-2">Connected</p>
+          <p className="text-sm mb-2">Connected</p>
           <p className="font-mono text-sm bg-gray-100 p-2 rounded">
             {wallet.address?.slice(0, 6)}...{wallet.address?.slice(-4)}
           </p>

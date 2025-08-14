@@ -138,10 +138,10 @@ export default function PointsManager({ user }: PointsManagerProps) {
           <p className="text-2xl font-bold text-blue-600">
             {subPoints?.balance || 0}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm">
             Total Earned: {subPoints?.totalEarned || 0}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm">
             Converted: {subPoints?.subToMain || 0}
           </p>
         </div>
@@ -151,10 +151,10 @@ export default function PointsManager({ user }: PointsManagerProps) {
           <p className="text-2xl font-bold text-green-600">
             {mainPoints?.balance || 0}
           </p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm">
             Total Earned: {mainPoints?.totalEarned || 0}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm">
             To Tokens: {mainPoints?.pointsToToken || 0}
           </p>
         </div>
@@ -209,7 +209,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
             {txStatus.status === 'error' && `❌ ${txStatus.error}`}
           </div>
           {txStatus.hash && (
-            <p className="text-xs text-gray-600 mt-1 font-mono">
+            <p className="text-xs mt-1 font-mono">
               Tx: {txStatus.hash.slice(0, 10)}...{txStatus.hash.slice(-8)}
             </p>
           )}
@@ -217,7 +217,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
       )}
 
       {/* Info */}
-      <div className="mt-6 text-xs text-gray-500 bg-gray-50 p-3 rounded">
+      <div className="mt-6 text-xs bg-gray-50 p-3 rounded">
         <p><strong>Note:</strong> All operations are processed through the Spring Boot backend.</p>
         <p>• Point earning uses backend service with transaction logging</p>
         <p>• Conversion follows 10:1 ratio enforced by JPA validation</p>

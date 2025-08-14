@@ -4,7 +4,6 @@
   --background: #ffffff;
   --foreground: #171717;
   --facebook-blue: #1877F2;
-  --facebook-gray: #65676B;
   --facebook-light-gray: #F0F2F5;
   --facebook-border: #DADDE1;
 }
@@ -55,11 +54,11 @@ body {
 
 /* Facebook-style typography */
 .text-facebook-primary {
-  color: var(--facebook-gray);
+  color: var(--foreground);
 }
 
 .text-facebook-secondary {
-  color: #8E8E93;
+  color: var(--foreground);
 }
 
 /* Facebook-style spacing */

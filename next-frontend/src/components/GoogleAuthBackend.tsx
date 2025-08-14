@@ -35,10 +35,10 @@ export default function GoogleAuthBackend({ onAuthSuccess }: GoogleAuthBackendPr
       </div>
 
       {/* Terms and Privacy Notice */}
-      <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
-        로그인하면 <span className="text-blue-600 hover:underline cursor-pointer">서비스 이용약관</span>과{' '}
-        <span className="text-blue-600 hover:underline cursor-pointer">개인정보처리방침</span>에 동의하는 것으로 간주됩니다.
-      </p>
+              <p className="text-xs mt-4 text-center leading-relaxed">
+          로그인하면 <span className="text-blue-600 hover:underline cursor-pointer">서비스 이용약관</span>과{' '}
+          <span className="text-blue-600 hover:underline cursor-pointer">개인정보처리방침</span>에 동의하는 것으로 간주됩니다.
+        </p>
     </div>
   )
 }

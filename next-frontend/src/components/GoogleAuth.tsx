@@ -90,12 +90,12 @@ export default function GoogleAuth({ onAuthSuccess }: GoogleAuthProps) {
       {isLoading && (
         <div className="mt-4 text-center">
           <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-600">로그인 중...</p>
+          <p className="mt-2 text-sm">로그인 중...</p>
         </div>
       )}
 
       {/* Terms and Privacy Notice */}
-      <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
+      <p className="text-xs mt-4 text-center leading-relaxed">
         로그인하면 <span className="text-blue-600 hover:underline cursor-pointer">서비스 이용약관</span>과{' '}
         <span className="text-blue-600 hover:underline cursor-pointer">개인정보처리방침</span>에 동의하는 것으로 간주됩니다.
       </p>

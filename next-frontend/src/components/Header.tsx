@@ -22,7 +22,7 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
             aria-label="Toggle mobile menu"
           >
             <svg
-              className="w-5 h-5 text-gray-600"
+              className="w-5 h-5"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -47,7 +47,7 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
 
           {/* Title - Responsive */}
           <div className="min-w-0 flex-1">
-            <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 truncate">
+            <h1 className="text-xl lg:text-2xl font-semibold truncate">
               <span className="hidden sm:inline">블루밍 블록체인 서비스</span>
               <span className="sm:hidden">블루밍</span>
             </h1>
@@ -67,22 +67,22 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
               <div className="hidden md:flex items-center space-x-3 text-sm">
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">메인:</span>
-                  <span className="font-medium text-gray-900">{balance?.mainPoint || 0}</span>
+                  <span className="font-medium">{balance?.mainPoint || 0}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">서브:</span>
-                  <span className="font-medium text-gray-900">{balance?.subPoint || 0}</span>
+                  <span className="font-medium">{balance?.subPoint || 0}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">토큰:</span>
-                  <span className="font-medium text-gray-900">{balance?.tokenBalance || 0}</span>
+                  <span className="font-medium">{balance?.tokenBalance || 0}</span>
                 </div>
               </div>
               
               {/* User Profile */}
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="font-medium text-gray-900 text-sm">{user.name}</p>
+                  <p className="font-medium text-sm">{user.name}</p>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                     user.roleId === 1 ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                   }`}>
