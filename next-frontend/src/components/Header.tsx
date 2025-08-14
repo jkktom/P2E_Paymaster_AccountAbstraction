@@ -84,9 +84,9 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
                 <div className="text-right">
                   <p className="font-medium text-gray-900 text-sm">{user.name}</p>
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    user.id.includes('admin') ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                    user.roleId === 1 ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                   }`}>
-                    {user.id.includes('admin') ? '관리자' : '사용자'}
+                    {user.roleId === 1 ? '관리자' : '사용자'}
                   </span>
                 </div>
                 <button

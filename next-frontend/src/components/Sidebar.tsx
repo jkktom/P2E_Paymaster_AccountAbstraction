@@ -221,7 +221,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
               </div>
 
               {/* Create Proposal (Admin only) */}
-              {user.id.includes('admin') && (
+              {user.roleId === 1 && (
                 <div className="ml-2 space-y-1 pt-2">
                   <p className="text-xs text-gray-500 px-3 py-1">관리자 기능</p>
                   <a 
@@ -253,9 +253,9 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 </p>
                 <div className="flex items-center mt-1">
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    user.id.includes('admin') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                    user.roleId === 1 ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {user.id.includes('admin') ? '관리자' : '사용자'}
+                    {user.roleId === 1 ? '관리자' : '사용자'}
                   </span>
                 </div>
               </div>

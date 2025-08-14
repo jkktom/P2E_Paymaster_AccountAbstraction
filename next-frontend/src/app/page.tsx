@@ -9,7 +9,7 @@ import GovernanceVoting from '@/components/GovernanceVoting'
 import type { WalletState } from '@/types'
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, signOut } = useAuth()
   const [wallet, setWallet] = useState<WalletState>({ isConnected: false })
 
   const handleWalletChange = (walletState: WalletState) => {
@@ -50,9 +50,36 @@ export default function Home() {
             </div>
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-2xl mx-auto">
-              <h3 className="text-lg font-semibold text-blue-800 mb-2">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4">
                 환영합니다! 🎉
               </h3>
+              
+              {/* User Info Display */}
+              <div className="mb-4 p-4 bg-white rounded-lg border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    {user?.avatar && (
+                      <img 
+                        src={user.avatar} 
+                        alt="Profile" 
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <p className="text-gray-800 font-medium">{user?.name}</p>
+                      <p className="text-gray-600 text-sm">{user?.email}</p>
+                      <p className="text-gray-500 text-xs">ID: {user?.googleId}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={signOut}
+                    className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
+                  >
+                    로그아웃
+                  </button>
+                </div>
+              </div>
+              
               <p className="text-blue-600 text-sm">
                 이제 포인트 적립, 토큰 교환, 거버넌스 투표 등 모든 기능을 이용할 수 있습니다.
               </p>
@@ -253,7 +280,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {user.id.includes('admin') && (
+                {user.roleId === 1 && (
                   <div className="bg-white rounded-lg shadow-md p-6" id="create-proposal">
                     <h3 className="text-lg font-semibold text-purple-600 mb-4">➕ 제안 생성 (관리자)</h3>
                     <div className="space-y-3">

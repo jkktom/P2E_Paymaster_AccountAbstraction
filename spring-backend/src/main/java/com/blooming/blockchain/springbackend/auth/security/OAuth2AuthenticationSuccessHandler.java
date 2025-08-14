@@ -73,6 +73,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                                "&user=" + java.net.URLEncoder.encode(user.getName(), "UTF-8");
             
             log.info("Redirecting to frontend with token for user: {}", email);
+            log.info("Full redirect URL: {}", redirectUrl);
             response.sendRedirect(redirectUrl);
 
         } catch (Exception e) {

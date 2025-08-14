@@ -1,0 +1,5 @@
+# Google OAuth Configuration (Frontend Only)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=1041570512238-c1d24j95hjctqmd9k9i291o2evvemi5j.apps.googleusercontent.com
+
+# Backend API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:8080
