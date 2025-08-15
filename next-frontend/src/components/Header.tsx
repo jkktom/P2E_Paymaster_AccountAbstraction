@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { formatTokenBalance } from '@/utils/tokenUtils'
 
 interface HeaderProps {
   isMobileOpen: boolean
@@ -75,7 +76,7 @@ export default function Header({ isMobileOpen, setIsMobileOpen }: HeaderProps) {
                 </div>
                 <div className="flex items-center space-x-2">
                   <span className="text-facebook-primary">토큰:</span>
-                  <span className="font-medium">{balance?.tokenBalance || 0}</span>
+                  <span className="font-medium">{formatTokenBalance(balance?.tokenBalance || 0)}</span>
                 </div>
               </div>
               

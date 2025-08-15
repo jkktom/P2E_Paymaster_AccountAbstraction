@@ -6,10 +6,22 @@ import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.TypeReference;
+import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Type;
+import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.tx.RawTransactionManager;
+import org.web3j.tx.gas.DefaultGasProvider;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -28,7 +40,11 @@ public class ZkSyncService {
     @Value("${app.zksync.chain-id:300}")
     private Integer chainId;
 
+    @Value("${app.zksync.owner.private-key:your-owner-private-key-here}")
+    private String ownerPrivateKey;
+
     private Web3j web3j;
+    private Credentials ownerCredentials;
 
     public ZkSyncService() {
         // Initialize Web3j client lazily
@@ -39,6 +55,24 @@ public class ZkSyncService {
             web3j = Web3j.build(new HttpService(zkSyncRpcUrl));
         }
         return web3j;
+    }
+
+    private Credentials getOwnerCredentials() {
+        if (ownerCredentials == null) {
+            if (ownerPrivateKey == null || ownerPrivateKey.equals("your-owner-private-key-here")) {
+                throw new RuntimeException("Owner private key not configured. Set ZKSYNC_OWNER_PRIVATE_KEY environment variable.");
+            }
+            try {
+                // Remove 0x prefix if present
+                String cleanPrivateKey = ownerPrivateKey.startsWith("0x") ? 
+                    ownerPrivateKey.substring(2) : ownerPrivateKey;
+                ownerCredentials = Credentials.create(cleanPrivateKey);
+                log.info("Owner credentials initialized for address: {}", ownerCredentials.getAddress());
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create owner credentials from private key", e);
+            }
+        }
+        return ownerCredentials;
     }
 
     /**
@@ -150,34 +184,113 @@ public class ZkSyncService {
     }
 
     /**
-     * Mint governance tokens using gasless transaction
+     * Mint governance tokens using backend owner credentials
+     * @param userWalletAddress User's wallet address to receive tokens
+     * @param amount Amount of tokens to mint (in wei, 18 decimals)
+     * @param reason Reason for minting (audit trail)
+     * @return Transaction hash
+     */
+    public CompletableFuture<String> mintGovernanceTokens(
+            String userWalletAddress, 
+            BigInteger amount,
+            String reason) {
+        
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                log.info("Minting {} governance tokens for wallet: {} - Reason: {}", amount, userWalletAddress, reason);
+                
+                Web3j web3j = getWeb3jClient();
+                Credentials ownerCreds = getOwnerCredentials();
+                
+                // Create the mintForExchange function call
+                Function mintFunction = new Function(
+                    "mintForExchange",
+                    Arrays.asList(
+                        new Address(userWalletAddress),
+                        new Uint256(amount),
+                        new Utf8String(reason)
+                    ),
+                    Collections.emptyList()
+                );
+                
+                // Encode the function call
+                String encodedFunction = FunctionEncoder.encode(mintFunction);
+                
+                // Create transaction manager
+                RawTransactionManager transactionManager = new RawTransactionManager(
+                    web3j, ownerCreds, chainId.longValue());
+                
+                // Send transaction
+                org.web3j.protocol.core.methods.response.EthSendTransaction ethSendTransaction = 
+                    transactionManager.sendTransaction(
+                        DefaultGasProvider.GAS_PRICE,
+                        DefaultGasProvider.GAS_LIMIT,
+                        governanceTokenAddress,
+                        encodedFunction,
+                        BigInteger.ZERO
+                    );
+                
+                if (ethSendTransaction.hasError()) {
+                    throw new RuntimeException("Transaction failed: " + ethSendTransaction.getError().getMessage());
+                }
+                
+                String txHash = ethSendTransaction.getTransactionHash();
+                log.info("Successfully sent mint transaction for {} tokens to {} - TX: {}", amount, userWalletAddress, txHash);
+                
+                // Wait for transaction receipt (optional - for confirmation)
+                try {
+                    // Poll for transaction receipt
+                    TransactionReceipt receipt = null;
+                    int attempts = 0;
+                    int maxAttempts = 30; // Wait up to 30 seconds
+                    
+                    while (receipt == null && attempts < maxAttempts) {
+                        Thread.sleep(1000); // Wait 1 second
+                        var receiptResponse = web3j.ethGetTransactionReceipt(txHash).send();
+                        if (receiptResponse.getTransactionReceipt().isPresent()) {
+                            receipt = receiptResponse.getTransactionReceipt().get();
+                            break;
+                        }
+                        attempts++;
+                    }
+                    
+                    if (receipt != null) {
+                        if (receipt.isStatusOK()) {
+                            log.info("Transaction confirmed successfully - TX: {}", txHash);
+                        } else {
+                            log.warn("Transaction completed but may have failed - TX: {}, Status: {}", txHash, receipt.getStatus());
+                        }
+                    } else {
+                        log.warn("Transaction receipt not found after {} attempts - TX: {}", maxAttempts, txHash);
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not get transaction receipt, but transaction was sent - TX: {} - Error: {}", txHash, e.getMessage());
+                }
+                
+                return txHash;
+                
+            } catch (Exception e) {
+                log.error("Failed to mint governance tokens for wallet: {}", userWalletAddress, e);
+                throw new RuntimeException("Token minting failed: " + e.getMessage(), e);
+            }
+        });
+    }
+
+    /**
+     * Mint governance tokens using gasless transaction (DEPRECATED - use mintGovernanceTokens instead)
      * @param userWalletAddress User's wallet address
      * @param userPrivateKey User's private key  
      * @param amount Amount of tokens to mint
      * @return Transaction hash
      */
+    @Deprecated
     public CompletableFuture<String> mintGovernanceTokensGasless(
             String userWalletAddress, 
             String userPrivateKey, 
             BigInteger amount) {
         
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                log.info("Minting {} governance tokens for wallet: {}", amount, userWalletAddress);
-                
-                // Prepare mint function call data
-                // This would encode the mint function call for the governance token contract
-                String mintFunctionData = encodeMintFunction(userWalletAddress, amount);
-                
-                // Execute gasless transaction
-                return executeGaslessTransaction(userPrivateKey, governanceTokenAddress, mintFunctionData)
-                    .join();
-                    
-            } catch (Exception e) {
-                log.error("Failed to mint governance tokens for wallet: {}", userWalletAddress, e);
-                throw new RuntimeException("Token minting failed", e);
-            }
-        });
+        // Redirect to new implementation with default reason
+        return mintGovernanceTokens(userWalletAddress, amount, "User signup token grant");
     }
 
     /**

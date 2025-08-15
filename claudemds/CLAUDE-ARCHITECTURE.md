@@ -37,20 +37,27 @@ This file documents the technical architecture choices and their justifications.
 - **Web3 Integration**: Better Web3 library support and documentation
 - **Market Adoption**: Higher industry adoption for enterprise applications
 
-## Account Abstraction with Alchemy
+## ✅ zkSync Account Abstraction Implementation
 
-### Integration Benefits:
-- **Managed Infrastructure**: Alchemy handles smart wallet deployment and management
-- **Gas Sponsorship**: Built-in gas policies eliminate user transaction costs
-- **Developer Experience**: Account Kit provides seamless wallet integration
-- **Security**: Battle-tested smart contracts and security practices
-- **Scalability**: Enterprise-grade infrastructure for high transaction volumes
+### FULLY OPERATIONAL Native zkSync Integration:
+- **Custom Implementation**: Native zkSync Era Account Abstraction without third-party dependencies
+- **Smart Wallet Creation**: Automatic wallet generation during Google OAuth signup
+- **Custom Paymaster**: GovernancePaymaster contract deployed at `0x10219E515c3955916d79A1aC614B86187f0872BC`
+- **Gasless Governance**: Fully tested vote, proposal creation, and delegation functions
+- **Production Ready**: 0.005 ETH funded paymaster sponsoring real transactions
 
-### Why Alchemy:
-- **Market Leader**: Proven track record with major Web3 applications
-- **Documentation**: Comprehensive guides and developer resources
-- **Support**: Enterprise support and SLA guarantees
-- **Integration**: Native TypeScript/Java SDK support
+### Why zkSync Era Over Alchemy:
+- **Native AA Support**: zkSync Era has native Account Abstraction built into the protocol
+- **Lower Costs**: More cost-effective than Ethereum mainnet with Alchemy
+- **Full Control**: Custom paymaster contracts provide complete control over gas policies
+- **Innovation**: Cutting-edge Layer 2 technology with proven security
+- **Scalability**: Higher throughput and lower latency than Ethereum mainnet solutions
+
+### Technical Implementation Benefits:
+- **ZkSyncService**: Custom service for smart wallet creation and management
+- **GovernancePaymaster**: Purpose-built contract for governance-specific gasless transactions
+- **Direct Integration**: No external dependencies, full system control
+- **Cost Efficiency**: Significantly lower transaction costs on zkSync Era
 
 ## Database Design Decisions
 
@@ -68,13 +75,15 @@ This file documents the technical architecture choices and their justifications.
 - **Analytics**: Source tracking for engagement analysis
 - **Compliance**: Transparent record keeping for potential regulations
 
-### Google OAuth User Model
+### Google OAuth + Smart Wallet User Model
 
-#### Simplified User Entity Benefits:
+#### Enhanced User Entity Benefits:
 - **Reduced Complexity**: No password management or email verification
 - **Better Security**: Delegated authentication to Google's infrastructure
-- **User Convenience**: Single sign-on experience
+- **Smart Wallet Integration**: Automatic zkSync wallet creation during signup
+- **User Convenience**: Single sign-on experience with immediate blockchain access
 - **Privacy Compliance**: Leverages Google's GDPR compliance
+- **JWT Enhancement**: Smart wallet addresses included in authentication tokens
 
 ## Security Architecture
 

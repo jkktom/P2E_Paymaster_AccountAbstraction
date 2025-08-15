@@ -25,17 +25,18 @@ This is a blockchain technical interview submission for developing a goods excha
 
 **Backend (Java Spring Boot):**
 - Spring Security + OAuth2 Client for Google authentication
-- JWT token generation for session management
+- JWT token generation with smart wallet address integration
 - Spring Data JPA with H2 (dev) / PostgreSQL (prod)
-- Web3j for blockchain interaction
-- Alchemy SDK integration for Account Abstraction
-- RESTful APIs for point management and token exchange
+- **ZkSyncService**: Automatic smart wallet creation during OAuth signup
+- **ZkSyncController**: RESTful APIs for gasless transactions
+- **Operational Point System**: Working main/sub points with real-time navbar display
 
-**Smart Contracts (Solidity):**
+**Smart Contracts (Solidity - zkSync Era):**
+- **GovernanceToken**: `0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e` (DEPLOYED)
+- **GovernancePaymaster**: `0x10219E515c3955916d79A1aC614B86187f0872BC` (DEPLOYED)
 - ERC20 governance token with OpenZeppelin voting extensions
-- Account Abstraction compatible contracts
-- Hardhat for development, testing, and deployment
-- Sepolia testnet for development (mainnet-ready configuration)
+- Native Account Abstraction compatible contracts
+- zkSync Era Sepolia testnet (fully operational)
 
 **Frontend (Next.js/TypeScript):**
 - NextAuth.js for Google OAuth integration
@@ -44,11 +45,12 @@ This is a blockchain technical interview submission for developing a goods excha
 - Axios for Spring API communication
 - No MetaMask required - native smart wallet integration
 
-**Account Abstraction (Alchemy):**
-- Alchemy Account Kit for smart contract wallet creation
-- Alchemy Gas Manager for sponsored transactions
-- Alchemy RPC for reliable blockchain interaction
-- Gasless token exchanges and governance voting
+**Account Abstraction (zkSync Era + Custom Implementation):**
+- **FULLY OPERATIONAL zkSync Account Abstraction system**
+- Native smart wallet creation during Google OAuth signup
+- Custom GovernancePaymaster for gasless governance transactions
+- zkSync Era Sepolia deployment with 0.005 ETH funding
+- Gasless voting, proposal creation, and delegation
 
 ## Data Models & Architecture
 
@@ -109,13 +111,13 @@ WalletTransaction: {
 - **Seamless UX**: Web2-like experience with Web3 benefits
 - **Enterprise Ready**: Simplified onboarding for non-crypto users
 
-**Authentication Flow:**
+**Authentication Flow (OPERATIONAL):**
 1. User clicks "Sign in with Google" on frontend
 2. NextAuth.js handles OAuth flow with Google
 3. Spring backend receives Google user info and creates User record
-4. Spring automatically creates Alchemy smart wallet for user
-5. JWT token returned for subsequent API calls
-6. User immediately ready for point earning and token exchange
+4. **ZkSyncService automatically creates zkSync smart wallet** for user
+5. **JWT token includes smart wallet address** for subsequent API calls
+6. User immediately ready for point earning and **gasless governance transactions**
 
 **Token Exchange Flow:**
 1. User spends main points (10:1 ratio)
@@ -124,13 +126,22 @@ WalletTransaction: {
 4. Governance tokens appear in user's smart wallet
 5. Transaction recorded in both systems
 
+## ✅ CURRENT IMPLEMENTATION STATUS
+
+**FULLY OPERATIONAL Account Abstraction System:**
+- ✅ **Smart Wallet Creation**: Automatic during Google OAuth signup
+- ✅ **Gasless Transactions**: Fully tested governance functions (vote, createProposal, delegate)
+- ✅ **Point System**: Working main/sub points with conversion and navbar display
+- ✅ **JWT Integration**: Smart wallet addresses included in authentication tokens
+- ✅ **zkSync Integration**: Native zkSync Era Sepolia deployment
+
 ## Technical Implementation Details
 
-**Alchemy Integration:**
-- Account Kit for wallet infrastructure
-- Gas Manager policies for sponsored transactions
-- RPC endpoints for reliable blockchain connectivity
-- Smart wallet factory for user wallet creation
+**zkSync Account Abstraction Integration:**
+- **ZkSyncService**: Smart wallet creation with secure private key generation
+- **GovernancePaymaster**: Custom paymaster contract for gasless governance transactions
+- **zkSync Era RPC**: Direct zkSync Era Sepolia blockchain connectivity
+- **Paymaster Funding**: 0.005 ETH available for transaction sponsorship
 
 **Security Considerations:**
 - Google OAuth 2.0 for secure authentication
@@ -148,12 +159,13 @@ WalletTransaction: {
 ## Detailed Documentation
 
 For comprehensive technical details, see:
+- **[Account Abstraction Implementation](./claudemds/CLAUDE-ACCOUNT-ABSTRACTION.md)** - ✅ FULLY OPERATIONAL zkSync AA system documentation
 - **[API Documentation](./claudemds/CLAUDE-API.md)** - Current implementation & planned expansion of REST API endpoints
 - **[OAuth2 Authentication](./claudemds/CLAUDE-OAUTH2.md)** - Google OAuth2 + JWT authentication architecture analysis
-- **[Backend Architecture](./claudemds/CLAUDE-BACKEND.md)** - Spring Boot backend design philosophy & implementation strategy
+- **[Backend Architecture](./claudemds/CLAUDE-BACKEND.md)** - ✅ OPERATIONAL Spring Boot backend with zkSync integration
 - **[Database Design](./claudemds/CLAUDE-DATABASE.md)** - Database architecture & performance-optimized data patterns
-- **[Smart Contract Architecture](./claudemds/CLAUDE-CONTRACTS.md)** - Hybrid Web2/Web3 governance system design
-- **[System Architecture](./claudemds/CLAUDE-ARCHITECTURE.md)** - Hybrid backend + blockchain architectural decisions
+- **[Smart Contract Architecture](./claudemds/CLAUDE-CONTRACTS.md)** - ✅ DEPLOYED zkSync contracts & governance system
+- **[System Architecture](./claudemds/CLAUDE-ARCHITECTURE.md)** - ✅ OPERATIONAL hybrid backend + blockchain architecture
 - **[Frontend Architecture](./claudemds/CLAUDE-FRONTEND.md)** - Frontend application structure and components
 - **[Testing Strategy](./claudemds/CLAUDE-TESTING.md)** - Comprehensive testing strategy and approaches
 - **[Deployment Guide](./claudemds/CLAUDE-DEPLOYMENT.md)** - Jenkins CI/CD deployment on single AWS Ubuntu instance
@@ -161,7 +173,7 @@ For comprehensive technical details, see:
 
 ## Development Requirements
 
-- **Target Network**: Ethereum Sepolia (mainnet-ready configuration)
+- **Target Network**: zkSync Era Sepolia (fully deployed and operational)
 - **Execution Ready**: All code must be runnable for evaluation
 - **Comprehensive Testing**: Unit, integration, and E2E test coverage
 - **Documentation**: Clear technology choice justifications

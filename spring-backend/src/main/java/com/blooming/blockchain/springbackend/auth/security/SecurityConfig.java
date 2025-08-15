@@ -35,7 +35,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             
             // Allow H2 console frames
-            .headers(headers -> headers.frameOptions().sameOrigin())
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
             
             // Configure CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
