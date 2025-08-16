@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
 interface SidebarProps {
   isMobileOpen: boolean
@@ -9,6 +10,12 @@ interface SidebarProps {
 
 export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps) {
   const { user, isAuthenticated } = useAuth()
+  const router = useRouter()
+
+  const navigateToHome = () => {
+    router.push('/')
+    setIsMobileOpen(false)
+  }
 
   return (
     <>
@@ -260,6 +267,18 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 </div>
               </div>
             </div>
+          </div>
+        )}
+        
+        {!isAuthenticated && (
+          <div className="mt-auto p-4 border-t bg-gray-50 text-center">
+            <p className="text-sm text-gray-600 mb-3">로그인이 필요합니다</p>
+            <button
+              onClick={navigateToHome}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              로그인 페이지로 이동
+            </button>
           </div>
         )}
       </div>

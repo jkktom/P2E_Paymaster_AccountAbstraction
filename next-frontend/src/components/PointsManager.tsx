@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { pointsAPI, exchangeAPI } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
+import { formatTokenBalance } from '@/utils/tokenUtils'
 import type { MainPointAccount, SubPointAccount, TransactionStatus, User } from '@/types'
 
 interface PointsManagerProps {
@@ -10,7 +11,7 @@ interface PointsManagerProps {
 }
 
 export default function PointsManager({ user }: PointsManagerProps) {
-  const { refreshBalance } = useAuth()
+  const { refreshBalance, balance } = useAuth()
   const [mainPoints, setMainPoints] = useState<MainPointAccount | null>(null)
   const [subPoints, setSubPoints] = useState<SubPointAccount | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -116,6 +117,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
         hash: result.txHash 
       })
       await fetchPointsData()
+      await refreshBalance() // Update header balance including token balance
     } catch (error: any) {
       console.error('Failed to exchange tokens:', error)
       setTxStatus({ 
@@ -129,33 +131,46 @@ export default function PointsManager({ user }: PointsManagerProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4">Points Management</h2>
+      <h2 className="text-xl font-semibold mb-4">포인트 및 토큰 관리</h2>
       
-      {/* Point Balances */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      {/* Point and Token Balances */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-medium text-blue-800">Sub Points</h3>
+          <h3 className="font-medium text-blue-800">서브포인트</h3>
           <p className="text-2xl font-bold text-blue-600">
             {subPoints?.balance || 0}
           </p>
           <p className="text-sm">
-            Total Earned: {subPoints?.totalEarned || 0}
+            총 획득: {subPoints?.totalEarned || 0}
           </p>
           <p className="text-sm">
-            Converted: {subPoints?.subToMain || 0}
+            전환완료: {subPoints?.subToMain || 0}
           </p>
         </div>
         
         <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="font-medium text-green-800">Main Points</h3>
+          <h3 className="font-medium text-green-800">메인포인트</h3>
           <p className="text-2xl font-bold text-green-600">
             {mainPoints?.balance || 0}
           </p>
           <p className="text-sm">
-            Total Earned: {mainPoints?.totalEarned || 0}
+            총 획득: {mainPoints?.totalEarned || 0}
           </p>
           <p className="text-sm">
-            To Tokens: {mainPoints?.pointsToToken || 0}
+            토큰교환: {mainPoints?.pointsToToken || 0}
+          </p>
+        </div>
+
+        <div className="bg-purple-50 p-4 rounded-lg">
+          <h3 className="font-medium text-purple-800">BLOOM 토큰</h3>
+          <p className="text-2xl font-bold text-purple-600">
+            {formatTokenBalance(balance?.tokenBalance || 0)}
+          </p>
+          <p className="text-sm">
+            거버넌스 투표 가능
+          </p>
+          <p className="text-sm">
+            가스리스 거래
           </p>
         </div>
       </div>
@@ -167,7 +182,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
           disabled={isLoading}
           className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Earn 10 Main Points (Demo)
+          메인포인트 10개 획득 (데모)
         </button>
 
         <button
@@ -175,7 +190,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
           disabled={isLoading}
           className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Earn 10 Sub Points (Demo)
+          서브포인트 10개 획득 (데모)
         </button>
 
         <button
@@ -183,15 +198,15 @@ export default function PointsManager({ user }: PointsManagerProps) {
           disabled={isLoading || !subPoints || subPoints.balance < 10}
           className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Convert 10 Sub → 1 Main Point
+          서브포인트 10개 → 메인포인트 1개 전환
         </button>
 
         <button
           onClick={exchangeToTokens}
           disabled={isLoading || !mainPoints || mainPoints.balance < 10}
-          className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Exchange 10 Main → 1 BLOOM Token (Gasless!)
+          메인포인트 10개 → BLOOM 토큰 1개 교환 (가스리스!)
         </button>
       </div>
 
@@ -205,7 +220,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
             txStatus.status === 'pending' ? 'text-yellow-800' :
             txStatus.status === 'error' ? 'text-red-800' : ''
           }`}>
-            {txStatus.status === 'pending' && '⏳ Processing transaction...'}
+            {txStatus.status === 'pending' && '⏳ 거래 처리 중...'}
             {txStatus.status === 'error' && `❌ ${txStatus.error}`}
           </div>
           {txStatus.hash && (
@@ -218,10 +233,10 @@ export default function PointsManager({ user }: PointsManagerProps) {
 
       {/* Info */}
       <div className="mt-6 text-xs bg-gray-50 p-3 rounded">
-        <p><strong>Note:</strong> All operations are processed through the Spring Boot backend.</p>
-        <p>• Point earning uses backend service with transaction logging</p>
-        <p>• Conversion follows 10:1 ratio enforced by JPA validation</p>
-        <p>• Token exchange uses zkSync paymaster for gasless transactions</p>
+        <p><strong>참고:</strong> 모든 작업은 Spring Boot 백엔드를 통해 처리됩니다.</p>
+        <p>• 포인트 획득은 거래 기록과 함께 백엔드 서비스를 사용합니다</p>
+        <p>• 전환은 JPA 검증으로 강제된 10:1 비율을 따릅니다</p>
+        <p>• 토큰 교환은 가스리스 거래를 위해 zkSync 페이마스터를 사용합니다</p>
       </div>
     </div>
   )
