@@ -15,6 +15,7 @@ import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.Utf8String;
 import org.web3j.abi.datatypes.generated.Uint256;
+import com.blooming.blockchain.springbackend.zksync.dto.CreateProposalResult;
 import org.web3j.tx.RawTransactionManager;
 import org.web3j.tx.gas.DefaultGasProvider;
 
@@ -23,6 +24,8 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Service
 @Slf4j

@@ -6,6 +6,7 @@ import com.blooming.blockchain.springbackend.proposal.repository.ProposalReposit
 import com.blooming.blockchain.springbackend.proposal.repository.ProposalVoteCountRepository;
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.repository.UserRepository;
+import com.blooming.blockchain.springbackend.zksync.dto.CreateProposalResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +23,7 @@ import java.util.Optional;
  * ProposalService - 제안 관리 서비스
  * 
  * 기본 CRUD 로직 및 제안 상태 관리를 담당합니다.
- * 스마트 컨트랙트와의 연동은 ZkSyncService에서 처리됩니다.
+ * 스마트 컨트랙트와의 연동은 SmartContractProposalService에서 처리됩니다.
  */
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,7 @@ public class ProposalService {
     private final ProposalRepository proposalRepository;
     private final ProposalVoteCountRepository proposalVoteCountRepository;
     private final UserRepository userRepository;
+    private final SmartContractProposalService smartContractProposalService;
 
     // =============== 조회 메서드 ===============
 
@@ -194,6 +196,72 @@ public class ProposalService {
     }
 
     // =============== 생성 메서드 ===============
+
+    /**
+     * 스마트 컨트랙트와 통합된 제안 생성
+     * 1. 스마트 컨트랙트에 제안 생성
+     * 2. 성공 시 백엔드 데이터베이스에 동기화
+     * 
+     * @param description 제안 설명
+     * @param proposerGoogleId 제안자 Google ID
+     * @param deadline 투표 마감일
+     * @return 생성된 제안 (스마트 컨트랙트와 데이터베이스 동기화 완료)
+     */
+    @Transactional
+    public Proposal createProposalWithSmartContract(String description, String proposerGoogleId, LocalDateTime deadline) {
+        log.info("Creating proposal with smart contract integration: proposer={}, description={}", 
+                proposerGoogleId, description.substring(0, Math.min(50, description.length())));
+
+        // 제안자 유효성 확인
+        Optional<User> proposer = userRepository.findByGoogleId(proposerGoogleId);
+        if (proposer.isEmpty()) {
+            throw new IllegalArgumentException("Proposer not found: " + proposerGoogleId);
+        }
+
+        User proposerUser = proposer.get();
+        String proposerWalletAddress = proposerUser.getSmartWalletAddress();
+
+        // 마감일 유효성 확인
+        if (deadline.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Deadline cannot be in the past");
+        }
+
+        try {
+            // 1. 스마트 컨트랙트에 제안 생성
+            CreateProposalResult smartContractResult = smartContractProposalService
+                .createProposal(description, proposerWalletAddress, deadline)
+                .join(); // 블로킹 호출 - 트랜잭션 내에서 처리
+
+            if (!smartContractResult.isSuccess()) {
+                throw new RuntimeException("Smart contract proposal creation failed: " + smartContractResult.getErrorMessage());
+            }
+
+            if (smartContractResult.getProposalId() == null) {
+                throw new RuntimeException("Smart contract proposal creation returned null proposal ID");
+            }
+
+            // 2. 백엔드 데이터베이스에 동기화
+            Proposal proposal = createProposal(
+                description,
+                proposerGoogleId,
+                proposerWalletAddress,
+                deadline,
+                smartContractResult.getProposalId(),
+                LocalDateTime.now(), // 현재 시간을 생성 시간으로 사용
+                smartContractResult.getTxHash()
+            );
+
+            log.info("Successfully created proposal with smart contract integration: proposalId={}, blockchainId={}, txHash={}", 
+                    proposal.getId(), proposal.getBlockchainProposalId(), smartContractResult.getTxHash());
+
+            return proposal;
+
+        } catch (Exception e) {
+            log.error("Failed to create proposal with smart contract integration: proposer={}, error={}", 
+                    proposerGoogleId, e.getMessage(), e);
+            throw new RuntimeException("Failed to create proposal: " + e.getMessage(), e);
+        }
+    }
 
     /**
      * 새 제안 생성 (데이터베이스에만 저장, 블록체인 연동은 별도)

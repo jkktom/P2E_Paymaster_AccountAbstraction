@@ -8,6 +8,7 @@ import com.blooming.blockchain.springbackend.proposal.repository.ProposalVoteCou
 import com.blooming.blockchain.springbackend.proposal.repository.UserVoteRepository;
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.repository.UserRepository;
+import com.blooming.blockchain.springbackend.zksync.dto.VoteResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,7 +25,7 @@ import java.util.Optional;
  * VotingService - 투표 로직 및 집계 업데이트 서비스
  * 
  * 사용자 투표 처리, 투표 집계 업데이트, 투표 기록 관리를 담당합니다.
- * 블록체인과의 실제 투표 트랜잭션은 ZkSyncService에서 처리됩니다.
+ * 블록체인과의 실제 투표 트랜잭션은 SmartContractProposalService에서 처리됩니다.
  */
 @Service
 @RequiredArgsConstructor
@@ -36,11 +37,82 @@ public class VotingService {
     private final ProposalRepository proposalRepository;
     private final ProposalVoteCountRepository proposalVoteCountRepository;
     private final UserRepository userRepository;
+    private final SmartContractProposalService smartContractProposalService;
 
     // =============== 투표 처리 메서드 ===============
 
     /**
-     * 사용자 투표 기록 및 집계 업데이트
+     * 스마트 컨트랙트와 통합된 투표 실행
+     * 1. 스마트 컨트랙트에서 투표 실행
+     * 2. 성공 시 백엔드 데이터베이스에 동기화
+     * 
+     * @param proposalId 제안 ID (데이터베이스)
+     * @param userGoogleId 투표자 Google ID
+     * @param support 투표 내용 (true = 찬성, false = 반대)
+     * @return 생성된 투표 기록 (스마트 컨트랙트와 데이터베이스 동기화 완료)
+     */
+    @Transactional
+    public UserVote voteWithSmartContract(Long proposalId, String userGoogleId, boolean support) {
+        log.info("Voting with smart contract integration: proposalId={}, user={}, support={}", 
+                proposalId, userGoogleId, support);
+
+        // 제안 및 사용자 유효성 확인
+        Proposal proposal = proposalRepository.findById(proposalId)
+            .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + proposalId));
+
+        User user = userRepository.findByGoogleId(userGoogleId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userGoogleId));
+
+        String voterWalletAddress = user.getSmartWalletAddress();
+
+        // 투표 가능 여부 확인
+        if (!proposal.canVote()) {
+            throw new IllegalStateException("Voting is not allowed for this proposal: " + proposalId);
+        }
+
+        // 중복 투표 확인
+        if (hasUserVoted(proposalId, userGoogleId)) {
+            throw new IllegalStateException("User has already voted on this proposal: " + userGoogleId);
+        }
+
+        try {
+            // 1. 스마트 컨트랙트에서 투표 실행
+            VoteResult smartContractResult = smartContractProposalService
+                .vote(proposal.getBlockchainProposalId(), voterWalletAddress, support)
+                .join(); // 블로킹 호출 - 트랜잭션 내에서 처리
+
+            if (!smartContractResult.isSuccess()) {
+                throw new RuntimeException("Smart contract vote failed: " + smartContractResult.getErrorMessage());
+            }
+
+            if (smartContractResult.getVotingPower().compareTo(BigInteger.ZERO) <= 0) {
+                throw new RuntimeException("Smart contract vote returned invalid voting power");
+            }
+
+            // 2. 백엔드 데이터베이스에 동기화
+            UserVote userVote = recordVote(
+                proposalId,
+                userGoogleId,
+                voterWalletAddress,
+                support,
+                smartContractResult.getVotingPower(),
+                smartContractResult.getTxHash()
+            );
+
+            log.info("Successfully voted with smart contract integration: voteId={}, proposalId={}, txHash={}", 
+                    userVote.getId(), proposalId, smartContractResult.getTxHash());
+
+            return userVote;
+
+        } catch (Exception e) {
+            log.error("Failed to vote with smart contract integration: proposalId={}, user={}, error={}", 
+                    proposalId, userGoogleId, e.getMessage(), e);
+            throw new RuntimeException("Failed to vote: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 사용자 투표 기록 및 집계 업데이트 (데이터베이스만, 스마트 컨트랙트는 별도)
      * 
      * @param proposalId 제안 ID
      * @param userGoogleId 투표자 Google ID
