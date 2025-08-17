@@ -40,9 +40,15 @@ public class ProposalVoteCount {
      * 연관된 제안
      */
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "proposal_id")
+    @JoinColumn(name = "proposal_id", insertable = false, updatable = false)
     private Proposal proposal;
+
+    /**
+     * Optimistic locking version
+     */
+    @Version
+    @Column(name = "version")
+    private Long version = 0L;
 
     /**
      * 찬성 투표 총 토큰 수 (Wei 단위로 저장)

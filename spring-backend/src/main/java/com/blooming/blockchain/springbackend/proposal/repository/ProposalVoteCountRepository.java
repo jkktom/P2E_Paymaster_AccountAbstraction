@@ -151,7 +151,7 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
     /**
      * 찬성 투표 추가 (원자적 업데이트)
      */
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ProposalVoteCount pvc SET pvc.forVotes = pvc.forVotes + :votingPower, pvc.forVoters = pvc.forVoters + 1, pvc.totalVoters = pvc.totalVoters + 1, pvc.lastUpdated = :updateTime WHERE pvc.proposalId = :proposalId")
     int addForVote(@Param("proposalId") Long proposalId, 
                    @Param("votingPower") BigInteger votingPower, 
@@ -160,7 +160,7 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
     /**
      * 반대 투표 추가 (원자적 업데이트)
      */
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ProposalVoteCount pvc SET pvc.againstVotes = pvc.againstVotes + :votingPower, pvc.againstVoters = pvc.againstVoters + 1, pvc.totalVoters = pvc.totalVoters + 1, pvc.lastUpdated = :updateTime WHERE pvc.proposalId = :proposalId")
     int addAgainstVote(@Param("proposalId") Long proposalId, 
                        @Param("votingPower") BigInteger votingPower, 
@@ -169,7 +169,7 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
     /**
      * 투표 집계 완전 재계산 (동기화용)
      */
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE ProposalVoteCount pvc SET pvc.forVotes = :forVotes, pvc.againstVotes = :againstVotes, pvc.forVoters = :forVoters, pvc.againstVoters = :againstVoters, pvc.totalVoters = :totalVoters, pvc.lastUpdated = :updateTime WHERE pvc.proposalId = :proposalId")
     int updateVoteCounts(@Param("proposalId") Long proposalId,
                         @Param("forVotes") BigInteger forVotes,

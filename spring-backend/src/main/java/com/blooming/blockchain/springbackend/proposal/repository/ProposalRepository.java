@@ -47,7 +47,7 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long> {
     /**
      * 완료된 제안 조회 (실행되었거나 취소된)
      */
-    @Query("SELECT p FROM Proposal p WHERE p.executed = true OR p.canceled = true ORDER BY p.updatedAt DESC")
+    @Query("SELECT p FROM Proposal p WHERE p.executed = true OR p.canceled = true ORDER BY p.createdAt DESC")
     Page<Proposal> findCompletedProposals(Pageable pageable);
 
     /**
