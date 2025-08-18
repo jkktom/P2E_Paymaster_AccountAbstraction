@@ -56,6 +56,9 @@ public class SecurityConfig {
                     "/api/auth/validate",
                     "/api/zksync/test/**",  // Allow test endpoints for development
                     "/api/zksync/paymaster/status",  // Allow paymaster status check
+                    "/api/proposals/active",  // Allow public access to active proposals  
+                    "/api/proposals/stats",   // Allow public access to proposal statistics
+                    "/api/votes/stats/**",    // Allow public access to vote statistics
                     "/public/**",
                     "/actuator/health",
                     "/h2-console/**",

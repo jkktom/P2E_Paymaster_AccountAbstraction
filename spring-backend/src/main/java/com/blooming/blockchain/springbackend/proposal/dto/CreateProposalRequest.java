@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class CreateProposalRequest {
     
     @NotBlank(message = "Description is required")
-    @Size(min = 10, max = 1000, message = "Description must be between 10 and 1000 characters")
+    @Size(min = 10, message = "Description must be at least 10 characters")
     private String description;
     
     @NotBlank(message = "Proposer Google ID is required")

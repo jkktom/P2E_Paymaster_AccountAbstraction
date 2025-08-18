@@ -3,6 +3,8 @@
 import { useAuth } from '@/hooks/useAuth'
 import GoogleAuth from '@/components/GoogleAuthBackend'
 import PointsManager from '@/components/PointsManager'
+import CreateProposal from '@/components/proposals/CreateProposal'
+import ProposalList from '@/components/proposals/ProposalList'
 
 export default function Home() {
   const { user, isAuthenticated, signOut } = useAuth()
@@ -10,6 +12,11 @@ export default function Home() {
   const handleAuthSuccess = (user: any) => {
     // This will be handled by the useAuth hook automatically
     console.log('Authentication successful:', user)
+  }
+
+  const handleProposalCreated = () => {
+    // This will trigger a refresh of the proposal list
+    window.location.reload()
   }
 
   return (
@@ -143,6 +150,24 @@ export default function Home() {
                     <p>지갑 생성 중...</p>
                   )}
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Governance Proposals Section */}
+          <section className="mb-12">
+            <div className="bg-white rounded-lg shadow-md p-6" id="governance">
+              <h3 className="text-xl font-semibold text-purple-600 mb-6">🗳️ 거버넌스 제안 및 투표</h3>
+              
+              {/* Create Proposal */}
+              <div className="mb-6">
+                <CreateProposal onProposalCreated={handleProposalCreated} />
+              </div>
+              
+              {/* Proposals List */}
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">활성 제안 목록</h4>
+                <ProposalList />
               </div>
             </div>
           </section>
