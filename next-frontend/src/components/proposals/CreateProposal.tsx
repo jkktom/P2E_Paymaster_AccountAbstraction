@@ -41,8 +41,8 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
       return;
     }
 
-    if (description.trim().length < 10) {
-      setError('제안 설명은 최소 10자 이상이어야 합니다.');
+    if (description.trim().length === 0) {
+      setError('제안 설명을 입력해주세요.');
       return;
     }
 
@@ -173,7 +173,7 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
                 required
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>최소 10자</span>
+                <span>자유롭게 작성하세요</span>
                 <span>{description.length}자</span>
               </div>
             </div>

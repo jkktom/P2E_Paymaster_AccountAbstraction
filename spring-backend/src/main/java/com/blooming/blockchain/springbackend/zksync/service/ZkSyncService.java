@@ -1,8 +1,14 @@
 package com.blooming.blockchain.springbackend.zksync.service;
 
+import com.blooming.blockchain.springbackend.wallet.entity.UserWallet;
+import com.blooming.blockchain.springbackend.wallet.repository.UserWalletRepository;
+import com.blooming.blockchain.springbackend.wallet.util.WalletEncryption;
+import com.blooming.blockchain.springbackend.zksync.util.ZkSyncTransactionHelper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameterName;
@@ -29,7 +35,12 @@ import java.time.ZoneOffset;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ZkSyncService {
+
+    private final UserWalletRepository userWalletRepository;
+    private final WalletEncryption walletEncryption;
+    private final ZkSyncTransactionHelper zkSyncTransactionHelper;
 
     @Value("${app.zksync.rpc-url:https://sepolia.era.zksync.dev}")
     private String zkSyncRpcUrl;
@@ -49,9 +60,7 @@ public class ZkSyncService {
     private Web3j web3j;
     private Credentials ownerCredentials;
 
-    public ZkSyncService() {
-        // Initialize Web3j client lazily
-    }
+    // Remove the custom constructor - @RequiredArgsConstructor will handle dependency injection
 
     private Web3j getWeb3jClient() {
         if (web3j == null) {
@@ -79,13 +88,20 @@ public class ZkSyncService {
     }
 
     /**
-     * Create a new smart wallet for a user
+     * Create and securely store a new smart wallet for a user
+     * @param userId User's ID for wallet ownership
      * @param userEmail User's email for logging purposes
-     * @return SmartWallet object containing address and private key
+     * @return UserWallet entity with encrypted private key stored
      */
-    public SmartWallet createSmartWallet(String userEmail) {
+    @Transactional
+    public UserWallet createAndStoreSmartWallet(java.util.UUID userId, String userEmail) {
         try {
-            log.info("Creating smart wallet for user: {}", userEmail);
+            log.info("Creating and storing smart wallet for user: {} ({})", userEmail, userId);
+            
+            // Check if user already has a wallet
+            if (userWalletRepository.existsByUserId(userId)) {
+                throw new IllegalStateException("User already has a wallet: " + userId);
+            }
             
             // Generate new private key securely
             SecureRandom secureRandom = new SecureRandom();
@@ -103,7 +119,93 @@ public class ZkSyncService {
             Credentials credentials = Credentials.create(privateKey);
             String walletAddress = credentials.getAddress();
             
-            log.info("Created smart wallet for user {}: {}", userEmail, walletAddress);
+            // Encrypt private key for secure storage
+            String encryptedPrivateKey = walletEncryption.encryptPrivateKey(privateKey);
+            
+            // Create and save UserWallet entity
+            UserWallet userWallet = UserWallet.builder()
+                .userId(userId)
+                .walletAddress(walletAddress)
+                .encryptedPrivateKey(encryptedPrivateKey)
+                .walletType("ZKSYNC_SMART_WALLET")
+                .network("zkSync Era Sepolia")
+                .chainId(chainId)
+                .isActive(true)
+                .build();
+            
+            UserWallet savedWallet = userWalletRepository.save(userWallet);
+            
+            log.info("Successfully created and stored smart wallet for user {}: {} ({})", 
+                    userEmail, savedWallet.getShortAddress(), savedWallet.getId());
+            
+            return savedWallet;
+                
+        } catch (Exception e) {
+            log.error("Failed to create and store smart wallet for user: {} ({})", userEmail, userId, e);
+            throw new RuntimeException("Smart wallet creation and storage failed", e);
+        }
+    }
+
+    /**
+     * Get user's wallet by userId
+     */
+    public java.util.Optional<UserWallet> getUserWallet(java.util.UUID userId) {
+        return userWalletRepository.findActiveWalletByUserId(userId);
+    }
+    
+    /**
+     * Get user's wallet by wallet address
+     */
+    public java.util.Optional<UserWallet> getUserWalletByAddress(String walletAddress) {
+        return userWalletRepository.findByWalletAddress(walletAddress);
+    }
+    
+    /**
+     * Get decrypted private key for transaction signing
+     * SECURITY: Only use when needed for transactions
+     */
+    public String getDecryptedPrivateKey(UserWallet userWallet) {
+        try {
+            if (userWallet == null || !userWallet.isReadyForTransactions()) {
+                throw new IllegalArgumentException("Invalid or inactive wallet");
+            }
+            
+            String privateKey = walletEncryption.decryptPrivateKey(userWallet.getEncryptedPrivateKey());
+            
+            // Mark wallet as used
+            userWallet.markAsUsed();
+            userWalletRepository.save(userWallet);
+            
+            log.debug("Retrieved private key for wallet: {}", userWallet.getShortAddress());
+            return privateKey;
+            
+        } catch (Exception e) {
+            log.error("Failed to decrypt private key for wallet: {}", userWallet.getId(), e);
+            throw new RuntimeException("Private key decryption failed", e);
+        }
+    }
+
+    /**
+     * DEPRECATED: Old method for backward compatibility
+     * Use createAndStoreSmartWallet instead
+     */
+    @Deprecated
+    public SmartWallet createSmartWallet(String userEmail) {
+        log.warn("DEPRECATED: createSmartWallet(String) method used. This method does not store private keys securely.");
+        
+        try {
+            // Generate wallet but don't store it (for backward compatibility)
+            SecureRandom secureRandom = new SecureRandom();
+            BigInteger privateKeyBigInt = new BigInteger(256, secureRandom);
+            
+            while (privateKeyBigInt.equals(BigInteger.ZERO) || 
+                   privateKeyBigInt.compareTo(new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16)) >= 0) {
+                privateKeyBigInt = new BigInteger(256, secureRandom);
+            }
+            
+            String privateKey = privateKeyBigInt.toString(16);
+            Credentials credentials = Credentials.create(privateKey);
+            String walletAddress = credentials.getAddress();
             
             return SmartWallet.builder()
                 .address(walletAddress)
@@ -156,7 +258,7 @@ public class ZkSyncService {
     }
 
     /**
-     * Execute gasless transaction using paymaster (mock implementation)
+     * Execute gasless transaction using zkSync Era paymaster
      * @param userPrivateKey User's private key
      * @param contractAddress Target contract address
      * @param functionData Encoded function call data
@@ -169,19 +271,42 @@ public class ZkSyncService {
         
         return CompletableFuture.supplyAsync(() -> {
             try {
-                log.info("Executing gasless transaction to contract: {}", contractAddress);
+                log.info("Executing zkSync Era paymaster transaction to contract: {}", contractAddress);
                 
-                // This is a placeholder for the actual gasless transaction implementation
-                // In production, this would integrate with zkSync's paymaster flow
-                log.info("Mock gasless transaction executed - UserKey: {}, Contract: {}", 
-                    userPrivateKey.substring(0, 8) + "...", contractAddress);
+                Web3j web3j = getWeb3jClient();
                 
-                // Return mock transaction hash for now
-                return "0x" + generateMockTxHash();
+                // Clean and create user credentials
+                String cleanPrivateKey = userPrivateKey.startsWith("0x") ? 
+                    userPrivateKey.substring(2) : userPrivateKey;
+                Credentials userCredentials = Credentials.create(cleanPrivateKey);
+                
+                log.info("Sending paymaster transaction from user: {}", userCredentials.getAddress());
+                
+                // Validate paymaster can sponsor this transaction
+                if (!zkSyncTransactionHelper.validatePaymasterBalance(
+                        web3j, paymasterAddress, 
+                        BigInteger.valueOf(300_000L), // Default gas limit
+                        BigInteger.valueOf(2_000_000_000L))) { // 2 Gwei
+                    
+                    log.warn("Paymaster balance insufficient, but continuing with transaction attempt");
+                }
+                
+                // Use zkSync Era paymaster transaction helper
+                String txHash = zkSyncTransactionHelper.sendPaymasterTransaction(
+                    web3j,
+                    userCredentials,
+                    contractAddress,
+                    functionData,
+                    paymasterAddress,
+                    chainId.longValue()
+                );
+                
+                log.info("Successfully sent zkSync Era paymaster transaction - TX: {}", txHash);
+                return txHash;
                 
             } catch (Exception e) {
-                log.error("Failed to execute gasless transaction", e);
-                throw new RuntimeException("Gasless transaction failed", e);
+                log.error("Failed to execute zkSync Era paymaster transaction", e);
+                throw new RuntimeException("zkSync Era paymaster transaction failed: " + e.getMessage(), e);
             }
         });
     }

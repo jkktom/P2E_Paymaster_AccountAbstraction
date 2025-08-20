@@ -35,6 +35,7 @@ public class ProposalService {
     private final ProposalVoteCountRepository proposalVoteCountRepository;
     private final UserRepository userRepository;
     private final SmartContractProposalService smartContractProposalService;
+    private final BlockchainProposalIdManager blockchainProposalIdManager;
 
     // =============== 조회 메서드 ===============
 
@@ -48,7 +49,7 @@ public class ProposalService {
     /**
      * 제안 ID로 조회
      */
-    public Optional<Proposal> getProposalById(Long proposalId) {
+    public Optional<Proposal> getProposalById(Integer proposalId) {
         return proposalRepository.findById(proposalId);
     }
 
@@ -56,13 +57,13 @@ public class ProposalService {
      * 블록체인 제안 ID로 조회
      */
     public Optional<Proposal> getProposalByBlockchainId(Integer blockchainProposalId) {
-        return proposalRepository.findByBlockchainProposalId(blockchainProposalId);
+        return proposalRepository.findById(blockchainProposalId);
     }
 
     /**
      * 제안 존재 여부 확인
      */
-    public boolean existsById(Long proposalId) {
+    public boolean existsById(Integer proposalId) {
         return proposalRepository.existsById(proposalId);
     }
 
@@ -70,7 +71,7 @@ public class ProposalService {
      * 블록체인 제안 ID 존재 여부 확인
      */
     public boolean existsByBlockchainId(Integer blockchainProposalId) {
-        return proposalRepository.existsByBlockchainProposalId(blockchainProposalId);
+        return proposalRepository.existsById(blockchainProposalId);
     }
 
     // =============== 상태별 조회 메서드 ===============
@@ -198,18 +199,19 @@ public class ProposalService {
     // =============== 생성 메서드 ===============
 
     /**
-     * 스마트 컨트랙트와 통합된 제안 생성
-     * 1. 스마트 컨트랙트에 제안 생성
-     * 2. 성공 시 백엔드 데이터베이스에 동기화
+     * 스마트 컨트랙트와 통합된 제안 생성 (새로운 블록체인 동기화 방식)
+     * 1. BlockchainProposalIdManager에서 다음 제안 ID 획득
+     * 2. 해당 ID로 스마트 컨트랙트에 제안 생성
+     * 3. 성공 시 같은 ID로 백엔드 데이터베이스에 저장
      * 
      * @param description 제안 설명
      * @param proposerGoogleId 제안자 Google ID
      * @param deadline 투표 마감일
-     * @return 생성된 제안 (스마트 컨트랙트와 데이터베이스 동기화 완료)
+     * @return 생성된 제안 (스마트 컨트랙트와 데이터베이스 완전 동기화)
      */
     @Transactional
     public Proposal createProposalWithSmartContract(String description, String proposerGoogleId, LocalDateTime deadline) {
-        log.info("Creating proposal with smart contract integration: proposer={}, description={}", 
+        log.info("Creating proposal with blockchain ID synchronization: proposer={}, description={}", 
                 proposerGoogleId, description.substring(0, Math.min(50, description.length())));
 
         // 제안자 유효성 확인
@@ -226,55 +228,116 @@ public class ProposalService {
             throw new IllegalArgumentException("Deadline cannot be in the past");
         }
 
+        // 1. 블록체인과 동기화된 다음 제안 ID 획득
+        Integer nextProposalId = blockchainProposalIdManager.getNextProposalId();
+        log.info("Using synchronized proposal ID: {}", nextProposalId);
+
         try {
-            // 1. 스마트 컨트랙트에 제안 생성
+            // 2. 지정된 ID로 스마트 컨트랙트에 제안 생성
+            // Note: SmartContractProposalService를 업데이트해서 ID를 받도록 해야 함
             CreateProposalResult smartContractResult = smartContractProposalService
-                .createProposal(description, proposerWalletAddress, deadline)
+                .createProposalWithId(nextProposalId, description, proposerWalletAddress, deadline)
                 .join(); // 블로킹 호출 - 트랜잭션 내에서 처리
 
             if (!smartContractResult.isSuccess()) {
                 throw new RuntimeException("Smart contract proposal creation failed: " + smartContractResult.getErrorMessage());
             }
 
-            if (smartContractResult.getProposalId() == null) {
-                throw new RuntimeException("Smart contract proposal creation returned null proposal ID");
-            }
-
-            // 2. 백엔드 데이터베이스에 동기화
+            // 3. 같은 ID로 백엔드 데이터베이스에 저장
             Proposal proposal = createProposal(
+                nextProposalId, // ID를 직접 지정
                 description,
                 proposerGoogleId,
                 proposerWalletAddress,
                 deadline,
-                smartContractResult.getProposalId(),
                 LocalDateTime.now(), // 현재 시간을 생성 시간으로 사용
                 smartContractResult.getTxHash()
             );
 
-            log.info("Successfully created proposal with smart contract integration: proposalId={}, blockchainId={}, txHash={}", 
-                    proposal.getId(), proposal.getBlockchainProposalId(), smartContractResult.getTxHash());
+            // 4. ID Manager에 성공 확인
+            blockchainProposalIdManager.confirmProposalCreated(nextProposalId);
+
+            log.info("Successfully created proposal with blockchain synchronization: proposalId={}, txHash={}", 
+                    proposal.getId(), smartContractResult.getTxHash());
 
             return proposal;
 
         } catch (Exception e) {
-            log.error("Failed to create proposal with smart contract integration: proposer={}, error={}", 
-                    proposerGoogleId, e.getMessage(), e);
+            log.error("Failed to create proposal with blockchain synchronization: proposalId={}, proposer={}, error={}", 
+                    nextProposalId, proposerGoogleId, e.getMessage(), e);
             throw new RuntimeException("Failed to create proposal: " + e.getMessage(), e);
         }
     }
 
     /**
-     * 새 제안 생성 (데이터베이스에만 저장, 블록체인 연동은 별도)
+     * 새 제안 생성 (블록체인 동기화 방식) - ID를 먼저 지정
      * 
+     * @param proposalId 블록체인과 동기화된 제안 ID (Primary Key)
      * @param description 제안 설명
      * @param proposerGoogleId 제안자 Google ID
      * @param proposerWalletAddress 제안자 지갑 주소
      * @param deadline 투표 마감일
-     * @param blockchainProposalId 블록체인에서 생성된 제안 ID
      * @param createdAt 블록체인에서의 생성 시간
      * @param txHash 생성 트랜잭션 해시
      * @return 생성된 제안
      */
+    @Transactional
+    public Proposal createProposal(Integer proposalId, String description, String proposerGoogleId, 
+                                  String proposerWalletAddress, LocalDateTime deadline,
+                                  LocalDateTime createdAt, String txHash) {
+        
+        log.info("Creating proposal with ID: id={}, description={}, proposer={}, deadline={}", 
+                proposalId, description, proposerGoogleId, deadline);
+
+        // 제안 ID 중복 확인 (이제 Primary Key이므로)
+        if (proposalRepository.existsById(proposalId)) {
+            throw new IllegalArgumentException("Proposal ID already exists: " + proposalId);
+        }
+
+        // 제안자 유효성 확인
+        Optional<User> proposer = userRepository.findByGoogleId(proposerGoogleId);
+        if (proposer.isEmpty()) {
+            throw new IllegalArgumentException("Proposer not found: " + proposerGoogleId);
+        }
+
+        // 지갑 주소 일치 확인
+        if (!proposerWalletAddress.equals(proposer.get().getSmartWalletAddress())) {
+            throw new IllegalArgumentException("Wallet address mismatch for user: " + proposerGoogleId);
+        }
+
+        // 마감일 유효성 확인
+        if (deadline.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Deadline cannot be in the past");
+        }
+
+        // 제안 생성
+        Proposal proposal = Proposal.builder()
+                .id(proposalId) // 블록체인과 동기화된 ID 직접 지정
+                .description(description)
+                .proposerAddress(proposerWalletAddress)
+                .deadline(deadline)
+                .executed(false)
+                .canceled(false)
+                .createdAt(createdAt)
+                .txHash(txHash)
+                .proposerGoogleId(proposerGoogleId)
+                .build();
+
+        Proposal savedProposal = proposalRepository.save(proposal);
+
+        // 투표 집계 초기화
+        createInitialVoteCount(proposalId);
+
+        log.info("Successfully created proposal: id={}, txHash={}", savedProposal.getId(), txHash);
+
+        return savedProposal;
+    }
+
+    /**
+     * 레거시 제안 생성 (데이터베이스에만 저장, 블록체인 연동은 별도)
+     * @deprecated Use createProposal(Integer proposalId, ...) instead for blockchain synchronization
+     */
+    @Deprecated
     @Transactional
     public Proposal createProposal(String description, String proposerGoogleId, 
                                   String proposerWalletAddress, LocalDateTime deadline,
@@ -307,7 +370,7 @@ public class ProposalService {
 
         // 제안 생성
         Proposal proposal = Proposal.builder()
-            .blockchainProposalId(blockchainProposalId)
+            .id(blockchainProposalId) // 블록체인 제안 ID를 Primary Key로 사용
             .description(description)
             .proposerAddress(proposerWalletAddress)
             .proposerGoogleId(proposerGoogleId)
@@ -324,7 +387,7 @@ public class ProposalService {
         createInitialVoteCount(savedProposal.getId());
 
         log.info("Proposal created successfully: id={}, blockchainId={}", 
-                savedProposal.getId(), savedProposal.getBlockchainProposalId());
+                savedProposal.getId(), savedProposal.getId());
 
         return savedProposal;
     }
@@ -333,7 +396,7 @@ public class ProposalService {
      * 투표 집계 초기화
      */
     @Transactional
-    public void createInitialVoteCount(Long proposalId) {
+    public void createInitialVoteCount(Integer proposalId) {
         if (proposalVoteCountRepository.existsByProposalId(proposalId)) {
             log.warn("Vote count already exists for proposal: {}", proposalId);
             return;
@@ -359,7 +422,7 @@ public class ProposalService {
      * 제안 실행 상태 업데이트
      */
     @Transactional
-    public void markAsExecuted(Long proposalId) {
+    public void markAsExecuted(Integer proposalId) {
         Proposal proposal = proposalRepository.findById(proposalId)
             .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + proposalId));
 
@@ -382,7 +445,7 @@ public class ProposalService {
      * 제안 취소 상태 업데이트
      */
     @Transactional
-    public void markAsCanceled(Long proposalId) {
+    public void markAsCanceled(Integer proposalId) {
         Proposal proposal = proposalRepository.findById(proposalId)
             .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + proposalId));
 
@@ -406,7 +469,7 @@ public class ProposalService {
      */
     @Transactional
     public void markAsExecutedByBlockchainId(Integer blockchainProposalId) {
-        Proposal proposal = proposalRepository.findByBlockchainProposalId(blockchainProposalId)
+        Proposal proposal = proposalRepository.findById(blockchainProposalId)
             .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + blockchainProposalId));
 
         markAsExecuted(proposal.getId());
@@ -417,10 +480,10 @@ public class ProposalService {
      */
     @Transactional
     public void markAsCanceledByBlockchainId(Integer blockchainProposalId) {
-        Proposal proposal = proposalRepository.findByBlockchainProposalId(blockchainProposalId)
+        Proposal proposal = proposalRepository.findById(blockchainProposalId)
             .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + blockchainProposalId));
 
-        markAsCanceled(proposal.getId());
+        markAsExecuted(proposal.getId());
     }
 
     // =============== 유틸리티 메서드 ===============
@@ -428,7 +491,7 @@ public class ProposalService {
     /**
      * 제안 유효성 검증
      */
-    public void validateProposal(Long proposalId) {
+    public void validateProposal(Integer proposalId) {
         Proposal proposal = proposalRepository.findById(proposalId)
             .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + proposalId));
 
@@ -440,7 +503,7 @@ public class ProposalService {
     /**
      * 투표 가능 여부 확인
      */
-    public boolean canVote(Long proposalId) {
+    public boolean canVote(Integer proposalId) {
         return proposalRepository.findById(proposalId)
             .map(Proposal::canVote)
             .orElse(false);
@@ -449,7 +512,7 @@ public class ProposalService {
     /**
      * 제안 상태 요약 정보 생성
      */
-    public String getProposalStatusSummary(Long proposalId) {
+    public String getProposalStatusSummary(Integer proposalId) {
         Proposal proposal = proposalRepository.findById(proposalId)
             .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + proposalId));
 

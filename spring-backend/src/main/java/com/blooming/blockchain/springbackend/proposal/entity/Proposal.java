@@ -27,7 +27,6 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "proposals", indexes = {
-    @Index(name = "idx_proposals_blockchain_id", columnList = "blockchainProposalId"),
     @Index(name = "idx_proposals_status", columnList = "executed, canceled, deadline"),
     @Index(name = "idx_proposals_proposer_google", columnList = "proposerGoogleId"),
     @Index(name = "idx_proposals_deadline", columnList = "deadline")
@@ -39,16 +38,15 @@ import java.time.LocalDateTime;
 @Builder
 public class Proposal {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     /**
-     * 스마트 컨트랙트의 proposal ID (1부터 시작하는 순차 ID)
+     * 블록체인 제안 ID - 이것이 이제 Primary Key가 됩니다
+     * 스마트 컨트랙트의 proposal ID와 완전히 동기화된 1부터 시작하는 순차 ID
+     * BlockchainProposalIdManager에서 관리하여 블록체인과 데이터베이스 간 완벽한 동기화 보장
      */
-    @Column(name = "blockchain_proposal_id", unique = true, nullable = false)
+    @Id
+    @Column(name = "blockchain_proposal_id", nullable = false)
     @NotNull
-    private Integer blockchainProposalId;
+    private Integer id;
 
     /**
      * 제안 설명 (스마트 컨트랙트의 description)

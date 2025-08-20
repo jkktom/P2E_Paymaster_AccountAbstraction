@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotNull;
 public class VoteRequest {
     
     @NotNull(message = "Proposal ID is required")
-    private Long proposalId;
+    private Integer proposalId;
     
     @NotBlank(message = "User Google ID is required")
     private String userGoogleId;

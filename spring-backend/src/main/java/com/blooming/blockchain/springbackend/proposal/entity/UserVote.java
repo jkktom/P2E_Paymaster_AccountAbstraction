@@ -50,7 +50,7 @@ public class UserVote {
      */
     @Column(name = "proposal_id", nullable = false)
     @NotNull
-    private Long proposalId;
+    private Integer proposalId;
 
     /**
      * 연관된 제안 엔티티 (지연 로딩)
@@ -189,7 +189,7 @@ public class UserVote {
     /**
      * 찬성 투표 생성
      */
-    public static UserVote createForVote(Long proposalId, String userGoogleId, String walletAddress, 
+    public static UserVote createForVote(Integer proposalId, String userGoogleId, String walletAddress,
                                         BigInteger votingPower, String txHash) {
         return UserVote.builder()
             .proposalId(proposalId)
@@ -205,7 +205,7 @@ public class UserVote {
     /**
      * 반대 투표 생성
      */
-    public static UserVote createAgainstVote(Long proposalId, String userGoogleId, String walletAddress, 
+    public static UserVote createAgainstVote(Integer proposalId, String userGoogleId, String walletAddress,
                                            BigInteger votingPower, String txHash) {
         return UserVote.builder()
             .proposalId(proposalId)

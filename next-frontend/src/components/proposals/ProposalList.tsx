@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
+// Removed Web3Auth import - using backend voting instead
 
 interface Proposal {
   id: number;
@@ -89,26 +90,37 @@ const ProposalList: React.FC = () => {
       setVotingProposal(proposalId);
       setError(null);
 
+      console.log('백엔드에서 투표 처리 중...');
       const voteRequest = {
         proposalId,
         userGoogleId: user.googleId,
         support,
       };
 
-      await axios.post(`${API_BASE_URL}/api/votes`, voteRequest, {
+      const response = await axios.post(`${API_BASE_URL}/api/votes/vote`, voteRequest, {
         headers: {
           'Content-Type': 'application/json',
           ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
         },
       });
 
-      alert(`${support ? '찬성' : '반대'} 투표가 완료되었습니다!`);
+      const voteResult = response.data;
+      console.log('투표 완료:', voteResult);
+
+      alert(`${support ? '찬성' : '반대'} 투표가 완료되었습니다!\n트랜잭션: ${voteResult.txHash || 'N/A'}`);
       
       // 투표 후 제안 목록과 통계 새로고침
       await fetchProposals();
     } catch (error: any) {
       console.error('투표 중 오류 발생:', error);
-      const errorMessage = error.response?.data?.message || '투표 처리 중 오류가 발생했습니다.';
+      
+      let errorMessage = '투표 처리 중 오류가 발생했습니다.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setError(errorMessage);
       alert(errorMessage);
     } finally {

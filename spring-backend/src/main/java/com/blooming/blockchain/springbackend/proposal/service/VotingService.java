@@ -9,6 +9,12 @@ import com.blooming.blockchain.springbackend.proposal.repository.UserVoteReposit
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.repository.UserRepository;
 import com.blooming.blockchain.springbackend.zksync.dto.VoteResult;
+import com.blooming.blockchain.springbackend.proposal.dto.TransactionData;
+import org.web3j.abi.FunctionEncoder;
+import org.web3j.abi.datatypes.Function;
+import org.web3j.abi.datatypes.Bool;
+import org.web3j.abi.datatypes.generated.Uint256;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +45,57 @@ public class VotingService {
     private final UserRepository userRepository;
     private final SmartContractProposalService smartContractProposalService;
 
+    public TransactionData prepareVoteTransaction(Integer proposalId, String userGoogleId, boolean support) {
+        log.info("Preparing vote transaction: proposalId={}, user={}, support={}", 
+                proposalId, userGoogleId, support);
+
+        // 투표 가능성 검증 (기존 로직 재사용)
+        Proposal proposal = proposalRepository.findById(proposalId)
+            .orElseThrow(() -> new IllegalArgumentException("Proposal not found: " + proposalId));
+
+        User user = userRepository.findByGoogleId(userGoogleId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userGoogleId));
+
+        // 투표 가능 여부 확인
+        if (!proposal.canVote()) {
+            throw new IllegalStateException("Voting is not allowed for this proposal: " + proposalId);
+        }
+
+        // 중복 투표 확인
+        if (hasUserVoted(proposalId, userGoogleId)) {
+            throw new IllegalStateException("User has already voted on this proposal: " + userGoogleId);
+        }
+
+        // 블록체인 제안 ID는 이제 Primary Key
+        Integer blockchainProposalId = proposal.getId();
+
+        // vote 함수 호출 인코딩
+        Function voteFunction = new Function(
+            "vote",
+            java.util.Arrays.asList(
+                new Uint256(java.math.BigInteger.valueOf(blockchainProposalId)),
+                new Bool(support)
+            ),
+            java.util.Collections.emptyList()
+        );
+
+        String encodedFunction = FunctionEncoder.encode(voteFunction);
+
+        return TransactionData.builder()
+            .to(smartContractProposalService.getGovernanceTokenAddress()) // Use existing service
+            .data(encodedFunction)
+            .gasLimit("200000") // Standard gas limit for vote
+            .value("0x0")
+            .transactionType("VOTE")
+            .metadata(java.util.Map.of(
+                "proposalId", proposalId,
+                "blockchainProposalId", blockchainProposalId,
+                "support", support,
+                "userGoogleId", userGoogleId
+            ))
+            .build();
+    }
+
     // =============== 투표 처리 메서드 ===============
 
     /**
@@ -52,7 +109,7 @@ public class VotingService {
      * @return 생성된 투표 기록 (스마트 컨트랙트와 데이터베이스 동기화 완료)
      */
     @Transactional
-    public UserVote voteWithSmartContract(Long proposalId, String userGoogleId, boolean support) {
+    public UserVote voteWithSmartContract(Integer proposalId, String userGoogleId, boolean support) {
         log.info("Voting with smart contract integration: proposalId={}, user={}, support={}", 
                 proposalId, userGoogleId, support);
 
@@ -76,9 +133,9 @@ public class VotingService {
         }
 
         try {
-            // 1. 스마트 컨트랙트에서 투표 실행
+            // 1. 스마트 컨트랙트에서 투표 실행 (사용자 자격증명 사용)
             VoteResult smartContractResult = smartContractProposalService
-                .vote(proposal.getBlockchainProposalId(), voterWalletAddress, support)
+                .voteWithUserCredentials(proposal.getId(), userGoogleId, support)
                 .join(); // 블로킹 호출 - 트랜잭션 내에서 처리
 
             if (!smartContractResult.isSuccess()) {
@@ -123,7 +180,7 @@ public class VotingService {
      * @return 생성된 투표 기록
      */
     @Transactional
-    public UserVote recordVote(Long proposalId, String userGoogleId, String voterWalletAddress,
+    public UserVote recordVote(Integer proposalId, String userGoogleId, String voterWalletAddress,
                               boolean support, BigInteger votingPower, String txHash) {
         
         log.info("Recording vote: proposalId={}, user={}, support={}, power={}", 
@@ -183,7 +240,7 @@ public class VotingService {
      * 투표 집계 업데이트 (원자적 업데이트)
      */
     @Transactional
-    public void updateVoteCount(Long proposalId, boolean support, BigInteger votingPower) {
+    public void updateVoteCount(Integer proposalId, boolean support, BigInteger votingPower) {
         LocalDateTime updateTime = LocalDateTime.now();
         
         // 먼저 투표 집계가 존재하는지 확인하고, 없으면 생성
@@ -213,7 +270,7 @@ public class VotingService {
      * 투표 집계가 존재하지 않는 경우 생성
      */
     @Transactional
-    public void createVoteCountIfNotExists(Long proposalId) {
+    public void createVoteCountIfNotExists(Integer proposalId) {
         if (!proposalVoteCountRepository.existsByProposalId(proposalId)) {
             ProposalVoteCount voteCount = ProposalVoteCount.builder()
                 .proposalId(proposalId)
@@ -236,28 +293,28 @@ public class VotingService {
     /**
      * 특정 제안에 대한 특정 사용자의 투표 조회
      */
-    public Optional<UserVote> getUserVote(Long proposalId, String userGoogleId) {
+    public Optional<UserVote> getUserVote(Integer proposalId, String userGoogleId) {
         return userVoteRepository.findByProposalIdAndUserGoogleId(proposalId, userGoogleId);
     }
 
     /**
      * 사용자가 특정 제안에 투표했는지 확인
      */
-    public boolean hasUserVoted(Long proposalId, String userGoogleId) {
+    public boolean hasUserVoted(Integer proposalId, String userGoogleId) {
         return userVoteRepository.existsByProposalIdAndUserGoogleId(proposalId, userGoogleId);
     }
 
     /**
      * 특정 제안의 모든 투표 기록 조회
      */
-    public List<UserVote> getVotesByProposal(Long proposalId) {
+    public List<UserVote> getVotesByProposal(Integer proposalId) {
         return userVoteRepository.findByProposalIdOrderByVotedAtDesc(proposalId);
     }
 
     /**
      * 특정 제안의 투표 기록 페이징 조회
      */
-    public Page<UserVote> getVotesByProposal(Long proposalId, Pageable pageable) {
+    public Page<UserVote> getVotesByProposal(Integer proposalId, Pageable pageable) {
         return userVoteRepository.findByProposalId(proposalId, pageable);
     }
 
@@ -278,14 +335,14 @@ public class VotingService {
     /**
      * 특정 제안의 찬성 투표 기록 조회
      */
-    public List<UserVote> getForVotesByProposal(Long proposalId) {
+    public List<UserVote> getForVotesByProposal(Integer proposalId) {
         return userVoteRepository.findByProposalIdAndSupportTrueOrderByVotingPowerDesc(proposalId);
     }
 
     /**
      * 특정 제안의 반대 투표 기록 조회
      */
-    public List<UserVote> getAgainstVotesByProposal(Long proposalId) {
+    public List<UserVote> getAgainstVotesByProposal(Integer proposalId) {
         return userVoteRepository.findByProposalIdAndSupportFalseOrderByVotingPowerDesc(proposalId);
     }
 
@@ -294,7 +351,7 @@ public class VotingService {
     /**
      * 특정 제안의 투표 집계 조회
      */
-    public Optional<ProposalVoteCount> getVoteCount(Long proposalId) {
+    public Optional<ProposalVoteCount> getVoteCount(Integer proposalId) {
         return proposalVoteCountRepository.findByProposalId(proposalId);
     }
 
@@ -331,21 +388,21 @@ public class VotingService {
     /**
      * 특정 제안의 투표자 수 조회
      */
-    public long getVoterCount(Long proposalId) {
+    public long getVoterCount(Integer proposalId) {
         return userVoteRepository.countByProposalId(proposalId);
     }
 
     /**
      * 특정 제안의 찬성 투표자 수 조회
      */
-    public long getForVoterCount(Long proposalId) {
+    public long getForVoterCount(Integer proposalId) {
         return userVoteRepository.countByProposalIdAndSupportTrue(proposalId);
     }
 
     /**
      * 특정 제안의 반대 투표자 수 조회
      */
-    public long getAgainstVoterCount(Long proposalId) {
+    public long getAgainstVoterCount(Integer proposalId) {
         return userVoteRepository.countByProposalIdAndSupportFalse(proposalId);
     }
 
@@ -390,7 +447,7 @@ public class VotingService {
      * 특정 제안의 투표 집계 재계산 (동기화용)
      */
     @Transactional
-    public void recalculateVoteCount(Long proposalId) {
+    public void recalculateVoteCount(Integer proposalId) {
         log.info("Recalculating vote count for proposal: {}", proposalId);
 
         // 개별 투표에서 집계 계산
@@ -442,7 +499,7 @@ public class VotingService {
     /**
      * 투표 가능 여부 종합 확인
      */
-    public boolean canUserVote(Long proposalId, String userGoogleId) {
+    public boolean canUserVote(Integer proposalId, String userGoogleId) {
         // 제안 존재 및 활성 상태 확인
         Optional<Proposal> proposalOpt = proposalRepository.findById(proposalId);
         if (proposalOpt.isEmpty() || !proposalOpt.get().canVote()) {
@@ -461,7 +518,7 @@ public class VotingService {
     /**
      * 투표 권한 확인 (최소 투표 권한 체크는 ZkSyncService에서 처리)
      */
-    public void validateVotingEligibility(Long proposalId, String userGoogleId, BigInteger votingPower) {
+    public void validateVotingEligibility(Integer proposalId, String userGoogleId, BigInteger votingPower) {
         if (!canUserVote(proposalId, userGoogleId)) {
             throw new IllegalStateException("User cannot vote on this proposal");
         }
@@ -476,7 +533,7 @@ public class VotingService {
     /**
      * 투표 결과 요약 생성
      */
-    public String getVoteResultSummary(Long proposalId) {
+    public String getVoteResultSummary(Integer proposalId) {
         Optional<ProposalVoteCount> voteCountOpt = getVoteCount(proposalId);
         if (voteCountOpt.isEmpty()) {
             return "투표 없음";
@@ -495,5 +552,27 @@ public class VotingService {
         long againstVotes = getUserAgainstVoteCount(userGoogleId);
 
         return String.format("총 %d회 투표 (찬성 %d회, 반대 %d회)", totalVotes, forVotes, againstVotes);
+    }
+
+    /**
+     * Get paymaster service information for health checks
+     * @return Paymaster service status and configuration info
+     */
+    public String getPaymasterServiceInfo() {
+        try {
+            // This would typically call the paymaster service directly
+            // For now, return basic info about the voting system
+            return String.format(
+                "Voting Service with Smart Contract Integration\n" +
+                "Governance Token: %s\n" +
+                "Chain ID: %d\n" +
+                "Status: Active",
+                smartContractProposalService.getGovernanceTokenAddress(),
+                300 // zkSync Era Sepolia
+            );
+        } catch (Exception e) {
+            log.error("Failed to get paymaster service info", e);
+            return "Paymaster service info unavailable: " + e.getMessage();
+        }
     }
 }

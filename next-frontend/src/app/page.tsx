@@ -119,62 +119,68 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Application - Conditional Content */}
-      {isAuthenticated && user ? (
-        <>
-          {/* Main Content Section */}
-          <section className="mb-12">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              {/* Points Management */}
-              <div className="space-y-6">
-                <div id="points">
-                  <PointsManager user={user} />
-                </div>
-              </div>
-
-              {/* AA Wallet Address */}
-              <div className="space-y-6">
-                <div className="bg-white rounded-lg shadow-md p-6" id="wallet-info">
-                  <h3 className="text-lg font-semibold text-green-600 mb-4">💳 AA 지갑 주소</h3>
-                  {user.smartWalletAddress ? (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <p className="text-sm mb-2">스마트 지갑 주소:</p>
-                      <p className="font-mono text-sm bg-white p-3 rounded border break-all">
-                        {user.smartWalletAddress}
-                      </p>
-                      <p className="text-xs mt-2">
-                        zkSync Account Abstraction으로 생성된 지갑입니다. 모든 거래가 가스리스로 처리됩니다.
-                      </p>
-                    </div>
-                  ) : (
-                    <p>지갑 생성 중...</p>
-                  )}
-                </div>
-              </div>
+      {/* Main Application - Always Show Components */}
+      <section className="mb-12">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Points Management */}
+          <div className="space-y-6">
+            <div id="points">
+              <PointsManager user={user} />
             </div>
-          </section>
+          </div>
 
-          {/* Governance Proposals Section */}
-          <section className="mb-12">
-            <div className="bg-white rounded-lg shadow-md p-6" id="governance">
-              <h3 className="text-xl font-semibold text-purple-600 mb-6">🗳️ 거버넌스 제안 및 투표</h3>
-              
-              {/* Create Proposal */}
-              <div className="mb-6">
-                <CreateProposal onProposalCreated={handleProposalCreated} />
-              </div>
-              
-              {/* Proposals List */}
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">활성 제안 목록</h4>
-                <ProposalList />
-              </div>
+          {/* AA Wallet Address */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-md p-6" id="wallet-info">
+              <h3 className="text-lg font-semibold text-green-600 mb-4">💳 AA 지갑 주소</h3>
+              {isAuthenticated && user?.smartWalletAddress ? (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm mb-2">스마트 지갑 주소:</p>
+                  <p className="font-mono text-sm bg-white p-3 rounded border break-all">
+                    {user.smartWalletAddress}
+                  </p>
+                  <p className="text-xs mt-2">
+                    zkSync Account Abstraction으로 생성된 지갑입니다. 모든 거래가 가스리스로 처리됩니다.
+                  </p>
+                </div>
+              ) : isAuthenticated ? (
+                <p className="text-gray-500">지갑 생성 중...</p>
+              ) : (
+                <div className="bg-gray-50 p-4 rounded-lg text-center">
+                  <p className="text-gray-500 mb-2">로그인하시면 스마트 지갑 주소를 확인할 수 있습니다</p>
+                  <button
+                    onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="text-blue-600 hover:text-blue-700 text-sm underline"
+                  >
+                    로그인하러 가기
+                  </button>
+                </div>
+              )}
             </div>
-          </section>
+          </div>
+        </div>
+      </section>
 
-        </>
-      ) : (
-        /* Public Demo Content */
+      {/* Governance Proposals Section - Always Show */}
+      <section className="mb-12">
+        <div className="bg-white rounded-lg shadow-md p-6" id="governance">
+          <h3 className="text-xl font-semibold text-purple-600 mb-6">🗳️ 거버넌스 제안 및 투표</h3>
+          
+          {/* Create Proposal */}
+          <div className="mb-6">
+            <CreateProposal onProposalCreated={handleProposalCreated} />
+          </div>
+          
+          {/* Proposals List */}
+          <div>
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">활성 제안 목록</h4>
+            <ProposalList />
+          </div>
+        </div>
+      </section>
+
+      {/* Additional Information Section - Show only when not logged in */}
+      {!isAuthenticated && (
         <section className="mb-12" id="demo">
           <div className="bg-white rounded-lg shadow-md p-8">
             <h3 className="text-2xl font-semibold text-center mb-6">

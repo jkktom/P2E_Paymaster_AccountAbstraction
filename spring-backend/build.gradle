@@ -11,12 +11,12 @@ version = '0.0.1-SNAPSHOT'
 ext.jwtVersion = '0.11.5'
 
 // Web3j and zkSync library versions
-ext.web3jVersion = '4.12.2'
+ext.web3jVersion = '4.14.0'
 ext.zkSyncVersion = '0.2.0'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -47,6 +47,10 @@ dependencies {
     implementation "org.web3j:core:${web3jVersion}"
     implementation "org.web3j:crypto:${web3jVersion}"
     implementation "org.web3j:contracts:${web3jVersion}"
+    
+    // Note: zkSync Era SDK is not yet available in Maven Central
+    // For now, we'll implement paymaster integration using Web3j and custom RPC calls
+    // When the official SDK becomes available, we can upgrade to use it
     
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

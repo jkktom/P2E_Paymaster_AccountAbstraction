@@ -7,19 +7,21 @@ import { formatTokenBalance } from '@/utils/tokenUtils'
 import type { MainPointAccount, SubPointAccount, TransactionStatus, User } from '@/types'
 
 interface PointsManagerProps {
-  user: User
+  user?: User
 }
 
 export default function PointsManager({ user }: PointsManagerProps) {
-  const { refreshBalance, balance } = useAuth()
+  const { refreshBalance, balance, isAuthenticated } = useAuth()
   const [mainPoints, setMainPoints] = useState<MainPointAccount | null>(null)
   const [subPoints, setSubPoints] = useState<SubPointAccount | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [txStatus, setTxStatus] = useState<TransactionStatus>({ status: 'success' })
 
   useEffect(() => {
-    fetchPointsData()
-  }, [])
+    if (isAuthenticated) {
+      fetchPointsData()
+    }
+  }, [isAuthenticated])
 
   const fetchPointsData = async () => {
     try {
@@ -35,8 +37,20 @@ export default function PointsManager({ user }: PointsManagerProps) {
     }
   }
 
+  // Check if user is logged in before performing actions
+  const requireLogin = () => {
+    if (!isAuthenticated) {
+      alert('로그인이 필요합니다.');
+      document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' });
+      return false;
+    }
+    return true;
+  };
+
   // Simulate point earning for demo - calls backend admin API
   const earnMainPoints = async (amount: number = 10) => {
+    if (!requireLogin()) return;
+    
     setIsLoading(true)
     setTxStatus({ status: 'pending' })
 
@@ -58,6 +72,8 @@ export default function PointsManager({ user }: PointsManagerProps) {
   }
 
   const earnSubPoints = async (amount: number = 10) => {
+    if (!requireLogin()) return;
+    
     setIsLoading(true)
     setTxStatus({ status: 'pending' })
 
@@ -80,6 +96,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
 
   // Convert sub points to main points via backend service
   const convertSubToMain = async () => {
+    if (!requireLogin()) return;
     if (!subPoints || subPoints.balance < 10) return
 
     setIsLoading(true)
@@ -104,6 +121,7 @@ export default function PointsManager({ user }: PointsManagerProps) {
 
   // Exchange main points for governance tokens via backend + blockchain
   const exchangeToTokens = async () => {
+    if (!requireLogin()) return;
     if (!mainPoints || mainPoints.balance < 10) return
 
     setIsLoading(true)

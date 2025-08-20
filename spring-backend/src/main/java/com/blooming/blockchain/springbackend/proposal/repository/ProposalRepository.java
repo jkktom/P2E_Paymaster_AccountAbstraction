@@ -16,19 +16,12 @@ import java.util.Optional;
  * Proposal Repository - 제안 데이터 접근 계층
  */
 @Repository
-public interface ProposalRepository extends JpaRepository<Proposal, Long> {
+public interface ProposalRepository extends JpaRepository<Proposal, Integer> {
 
     // =============== 기본 조회 메서드 ===============
-
-    /**
-     * 블록체인 제안 ID로 조회
-     */
-    Optional<Proposal> findByBlockchainProposalId(Integer blockchainProposalId);
-
-    /**
-     * 블록체인 제안 ID 존재 여부 확인
-     */
-    boolean existsByBlockchainProposalId(Integer blockchainProposalId);
+    
+    // Note: 블록체인 제안 ID가 이제 Primary Key이므로 별도의 findByBlockchainProposalId 메서드가 불필요
+    // findById(Integer id)를 사용하면 됨
 
     // =============== 상태별 조회 메서드 ===============
 
@@ -168,4 +161,5 @@ public interface ProposalRepository extends JpaRepository<Proposal, Long> {
      */
     @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Proposal p WHERE p.proposerGoogleId = :googleId AND p.executed = false AND p.canceled = false AND p.deadline > :now")
     boolean hasActiveProposals(@Param("googleId") String googleId, @Param("now") LocalDateTime now);
+
 }

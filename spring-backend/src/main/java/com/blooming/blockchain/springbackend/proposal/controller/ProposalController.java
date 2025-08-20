@@ -75,7 +75,7 @@ public class ProposalController {
      * 제안 ID로 조회
      */
     @GetMapping("/{proposalId}")
-    public ResponseEntity<ProposalResponse> getProposal(@PathVariable Long proposalId) {
+    public ResponseEntity<ProposalResponse> getProposal(@PathVariable Integer proposalId) {
         return proposalService.getProposalById(proposalId)
                 .map(proposal -> ResponseEntity.ok(ProposalResponse.fromEntity(proposal)))
                 .orElse(ResponseEntity.notFound().build());

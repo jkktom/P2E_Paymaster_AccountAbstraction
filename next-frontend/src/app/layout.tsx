@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
+// Removed Web3AuthProvider - using backend voting instead
 import LayoutWrapper from "@/components/LayoutWrapper";
 
 const geistSans = Geist({

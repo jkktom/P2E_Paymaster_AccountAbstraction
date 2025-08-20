@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ProposalResponse {
     
-    private Long id;
+    private Integer id;
     private Integer blockchainProposalId;
     private String description;
     private String proposerAddress;
@@ -32,7 +32,7 @@ public class ProposalResponse {
     public static ProposalResponse fromEntity(Proposal proposal) {
         return ProposalResponse.builder()
                 .id(proposal.getId())
-                .blockchainProposalId(proposal.getBlockchainProposalId())
+                .blockchainProposalId(proposal.getId())
                 .description(proposal.getDescription())
                 .proposerAddress(proposal.getProposerAddress())
                 .proposerGoogleId(proposal.getProposerGoogleId())

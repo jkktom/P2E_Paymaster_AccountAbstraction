@@ -24,12 +24,12 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
     /**
      * 특정 제안에 대한 특정 사용자의 투표 조회
      */
-    Optional<UserVote> findByProposalIdAndUserGoogleId(Long proposalId, String userGoogleId);
+    Optional<UserVote> findByProposalIdAndUserGoogleId(Integer proposalId, String userGoogleId);
 
     /**
      * 특정 제안에 대한 특정 사용자가 투표했는지 확인
      */
-    boolean existsByProposalIdAndUserGoogleId(Long proposalId, String userGoogleId);
+    boolean existsByProposalIdAndUserGoogleId(Integer proposalId, String userGoogleId);
 
     // =============== 사용자별 조회 메서드 ===============
 
@@ -73,37 +73,37 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
     /**
      * 특정 제안의 모든 투표 기록 조회
      */
-    List<UserVote> findByProposalIdOrderByVotedAtDesc(Long proposalId);
+    List<UserVote> findByProposalIdOrderByVotedAtDesc(Integer proposalId);
 
     /**
      * 특정 제안의 투표 기록 페이징 조회
      */
-    Page<UserVote> findByProposalId(Long proposalId, Pageable pageable);
+    Page<UserVote> findByProposalId(Integer proposalId, Pageable pageable);
 
     /**
      * 특정 제안의 찬성 투표 기록 조회
      */
-    List<UserVote> findByProposalIdAndSupportTrueOrderByVotingPowerDesc(Long proposalId);
+    List<UserVote> findByProposalIdAndSupportTrueOrderByVotingPowerDesc(Integer proposalId);
 
     /**
      * 특정 제안의 반대 투표 기록 조회
      */
-    List<UserVote> findByProposalIdAndSupportFalseOrderByVotingPowerDesc(Long proposalId);
+    List<UserVote> findByProposalIdAndSupportFalseOrderByVotingPowerDesc(Integer proposalId);
 
     /**
      * 특정 제안의 투표자 수 조회
      */
-    long countByProposalId(Long proposalId);
+    long countByProposalId(Integer proposalId);
 
     /**
      * 특정 제안의 찬성 투표자 수 조회
      */
-    long countByProposalIdAndSupportTrue(Long proposalId);
+    long countByProposalIdAndSupportTrue(Integer proposalId);
 
     /**
      * 특정 제안의 반대 투표자 수 조회
      */
-    long countByProposalIdAndSupportFalse(Long proposalId);
+    long countByProposalIdAndSupportFalse(Integer proposalId);
 
     // =============== 투표력별 조회 메서드 ===============
 
@@ -117,7 +117,7 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
      * 특정 제안에서 가장 큰 투표력을 가진 투표들 조회 (상위 N개)
      */
     @Query("SELECT uv FROM UserVote uv WHERE uv.proposalId = :proposalId ORDER BY uv.votingPower DESC")
-    List<UserVote> findTopVotesByPower(@Param("proposalId") Long proposalId, Pageable pageable);
+    List<UserVote> findTopVotesByPower(@Param("proposalId") Integer proposalId, Pageable pageable);
 
     /**
      * 특정 사용자의 평균 투표력 조회
@@ -153,19 +153,19 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
      * 특정 제안의 찬성 투표력 합계
      */
     @Query("SELECT COALESCE(SUM(uv.votingPower), 0) FROM UserVote uv WHERE uv.proposalId = :proposalId AND uv.support = true")
-    BigInteger sumForVotesByProposal(@Param("proposalId") Long proposalId);
+    BigInteger sumForVotesByProposal(@Param("proposalId") Integer proposalId);
 
     /**
      * 특정 제안의 반대 투표력 합계
      */
     @Query("SELECT COALESCE(SUM(uv.votingPower), 0) FROM UserVote uv WHERE uv.proposalId = :proposalId AND uv.support = false")
-    BigInteger sumAgainstVotesByProposal(@Param("proposalId") Long proposalId);
+    BigInteger sumAgainstVotesByProposal(@Param("proposalId") Integer proposalId);
 
     /**
      * 특정 제안의 총 투표력 합계
      */
     @Query("SELECT COALESCE(SUM(uv.votingPower), 0) FROM UserVote uv WHERE uv.proposalId = :proposalId")
-    BigInteger sumTotalVotesByProposal(@Param("proposalId") Long proposalId);
+    BigInteger sumTotalVotesByProposal(@Param("proposalId") Integer proposalId);
 
     /**
      * 특정 사용자의 총 투표력 합계
@@ -183,7 +183,7 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
     /**
      * 특정 지갑 주소가 특정 제안에 투표했는지 확인
      */
-    boolean existsByProposalIdAndVoterWalletAddress(Long proposalId, String walletAddress);
+    boolean existsByProposalIdAndVoterWalletAddress(Integer proposalId, String walletAddress);
 
     // =============== 트랜잭션 해시별 조회 메서드 ===============
 
@@ -218,13 +218,13 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
      * 특정 제안에 투표한 사용자들의 Google ID 목록 조회
      */
     @Query("SELECT DISTINCT uv.userGoogleId FROM UserVote uv WHERE uv.proposalId = :proposalId")
-    List<String> findVotersByProposal(@Param("proposalId") Long proposalId);
+    List<String> findVotersByProposal(@Param("proposalId") Integer proposalId);
 
     /**
      * 여러 제안에 모두 투표한 사용자들 조회
      */
     @Query("SELECT uv.userGoogleId FROM UserVote uv WHERE uv.proposalId IN :proposalIds GROUP BY uv.userGoogleId HAVING COUNT(DISTINCT uv.proposalId) = :proposalCount")
-    List<String> findUsersWhoVotedOnAllProposals(@Param("proposalIds") List<Long> proposalIds, 
+    List<String> findUsersWhoVotedOnAllProposals(@Param("proposalIds") List<Integer> proposalIds, 
                                                  @Param("proposalCount") long proposalCount);
 
     // =============== 통계 메서드 ===============
@@ -263,7 +263,7 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
     /**
      * 특정 제안의 모든 투표 기록 삭제
      */
-    void deleteByProposalId(Long proposalId);
+    void deleteByProposalId(Integer proposalId);
 
     /**
      * 특정 사용자의 모든 투표 기록 삭제
@@ -273,5 +273,5 @@ public interface UserVoteRepository extends JpaRepository<UserVote, Long> {
     /**
      * 특정 사용자의 특정 제안 투표 기록 삭제
      */
-    void deleteByProposalIdAndUserGoogleId(Long proposalId, String userGoogleId);
+    void deleteByProposalIdAndUserGoogleId(Integer proposalId, String userGoogleId);
 }

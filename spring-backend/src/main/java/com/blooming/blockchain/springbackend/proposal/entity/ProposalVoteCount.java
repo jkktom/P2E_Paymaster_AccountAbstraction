@@ -34,7 +34,7 @@ public class ProposalVoteCount {
      * Proposal과 1:1 관계 - 같은 ID 사용
      */
     @Id
-    private Long proposalId;
+    private Integer proposalId;
 
     /**
      * 연관된 제안

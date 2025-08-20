@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class VoteResponse {
     
     private Long id;
-    private Long proposalId;
+    private Integer proposalId;
     private String userGoogleId;
     private String voterWalletAddress;
     private boolean support;

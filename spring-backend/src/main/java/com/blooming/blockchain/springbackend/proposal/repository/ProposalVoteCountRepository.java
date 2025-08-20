@@ -16,20 +16,20 @@ import java.util.Optional;
  * ProposalVoteCount Repository - 제안 투표 집계 데이터 접근 계층
  */
 @Repository
-public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteCount, Long> {
+public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteCount, Integer> {
 
     // =============== 기본 조회 메서드 ===============
 
     /**
      * 제안 ID로 투표 집계 조회
      */
-    Optional<ProposalVoteCount> findByProposalId(Long proposalId);
+    Optional<ProposalVoteCount> findByProposalId(Integer proposalId);
 
     /**
      * 제안 ID들에 대한 투표 집계 일괄 조회
      */
     @Query("SELECT pvc FROM ProposalVoteCount pvc WHERE pvc.proposalId IN :proposalIds")
-    List<ProposalVoteCount> findByProposalIds(@Param("proposalIds") List<Long> proposalIds);
+    List<ProposalVoteCount> findByProposalIds(@Param("proposalIds") List<Integer> proposalIds);
 
     // =============== 투표 현황별 조회 메서드 ===============
 
@@ -153,7 +153,7 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
      */
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProposalVoteCount pvc SET pvc.forVotes = pvc.forVotes + :votingPower, pvc.forVoters = pvc.forVoters + 1, pvc.totalVoters = pvc.totalVoters + 1, pvc.lastUpdated = :updateTime WHERE pvc.proposalId = :proposalId")
-    int addForVote(@Param("proposalId") Long proposalId, 
+    int addForVote(@Param("proposalId") Integer proposalId, 
                    @Param("votingPower") BigInteger votingPower, 
                    @Param("updateTime") LocalDateTime updateTime);
 
@@ -162,7 +162,7 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
      */
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProposalVoteCount pvc SET pvc.againstVotes = pvc.againstVotes + :votingPower, pvc.againstVoters = pvc.againstVoters + 1, pvc.totalVoters = pvc.totalVoters + 1, pvc.lastUpdated = :updateTime WHERE pvc.proposalId = :proposalId")
-    int addAgainstVote(@Param("proposalId") Long proposalId, 
+    int addAgainstVote(@Param("proposalId") Integer proposalId, 
                        @Param("votingPower") BigInteger votingPower, 
                        @Param("updateTime") LocalDateTime updateTime);
 
@@ -171,7 +171,7 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
      */
     @Modifying(clearAutomatically = true)
     @Query("UPDATE ProposalVoteCount pvc SET pvc.forVotes = :forVotes, pvc.againstVotes = :againstVotes, pvc.forVoters = :forVoters, pvc.againstVoters = :againstVoters, pvc.totalVoters = :totalVoters, pvc.lastUpdated = :updateTime WHERE pvc.proposalId = :proposalId")
-    int updateVoteCounts(@Param("proposalId") Long proposalId,
+    int updateVoteCounts(@Param("proposalId") Integer proposalId,
                         @Param("forVotes") BigInteger forVotes,
                         @Param("againstVotes") BigInteger againstVotes,
                         @Param("forVoters") Integer forVoters,
@@ -184,18 +184,18 @@ public interface ProposalVoteCountRepository extends JpaRepository<ProposalVoteC
     /**
      * 특정 제안의 투표 집계가 존재하는지 확인
      */
-    boolean existsByProposalId(Long proposalId);
+    boolean existsByProposalId(Integer proposalId);
 
     /**
      * 투표가 있는 제안인지 확인
      */
     @Query("SELECT CASE WHEN pvc.totalVoters > 0 THEN true ELSE false END FROM ProposalVoteCount pvc WHERE pvc.proposalId = :proposalId")
-    Boolean hasVotes(@Param("proposalId") Long proposalId);
+    Boolean hasVotes(@Param("proposalId") Integer proposalId);
 
     // =============== 삭제 메서드 ===============
 
     /**
      * 특정 제안의 투표 집계 삭제
      */
-    void deleteByProposalId(Long proposalId);
+    void deleteByProposalId(Integer proposalId);
 }
