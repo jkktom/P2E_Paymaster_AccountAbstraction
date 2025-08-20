@@ -133,36 +133,32 @@ public class VotingService {
         }
 
         try {
-            // 1. 스마트 컨트랙트에서 투표 실행 (사용자 자격증명 사용)
-            VoteResult smartContractResult = smartContractProposalService
-                .voteWithUserCredentials(proposal.getId(), userGoogleId, support)
-                .join(); // 블로킹 호출 - 트랜잭션 내에서 처리
+            // MOCK VOTING: Skip smart contract call for demo purposes
+            // Generate mock voting power and transaction hash
+            BigInteger mockVotingPower = generateMockVotingPower(); // 1-5 tokens in Wei
+            String mockTxHash = generateMockTransactionHash();
+            
+            log.info("MOCK VOTING: Simulating successful vote without blockchain call");
+            log.info("MOCK VOTING: Generated mock voting power: {} Wei", mockVotingPower);
+            log.info("MOCK VOTING: Generated mock transaction hash: {}", mockTxHash);
 
-            if (!smartContractResult.isSuccess()) {
-                throw new RuntimeException("Smart contract vote failed: " + smartContractResult.getErrorMessage());
-            }
-
-            if (smartContractResult.getVotingPower().compareTo(BigInteger.ZERO) <= 0) {
-                throw new RuntimeException("Smart contract vote returned invalid voting power");
-            }
-
-            // 2. 백엔드 데이터베이스에 동기화
+            // Record vote directly in database with mock data
             UserVote userVote = recordVote(
                 proposalId,
                 userGoogleId,
                 voterWalletAddress,
                 support,
-                smartContractResult.getVotingPower(),
-                smartContractResult.getTxHash()
+                mockVotingPower,
+                mockTxHash
             );
 
-            log.info("Successfully voted with smart contract integration: voteId={}, proposalId={}, txHash={}", 
-                    userVote.getId(), proposalId, smartContractResult.getTxHash());
+            log.info("Successfully recorded mock vote: voteId={}, proposalId={}, mockTxHash={}", 
+                    userVote.getId(), proposalId, mockTxHash);
 
             return userVote;
 
         } catch (Exception e) {
-            log.error("Failed to vote with smart contract integration: proposalId={}, user={}, error={}", 
+            log.error("Failed to record mock vote: proposalId={}, user={}, error={}", 
                     proposalId, userGoogleId, e.getMessage(), e);
             throw new RuntimeException("Failed to vote: " + e.getMessage(), e);
         }
@@ -574,5 +570,33 @@ public class VotingService {
             log.error("Failed to get paymaster service info", e);
             return "Paymaster service info unavailable: " + e.getMessage();
         }
+    }
+    
+    // =============== Mock Voting Helper Methods ===============
+    
+    /**
+     * Generate mock voting power for demo purposes (1-5 governance tokens in Wei)
+     */
+    private BigInteger generateMockVotingPower() {
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        // Generate 1-5 tokens worth of voting power
+        long tokens = random.nextInt(5) + 1;
+        return BigInteger.valueOf(tokens).multiply(new BigInteger("1000000000000000000")); // Convert to Wei
+    }
+    
+    /**
+     * Generate mock transaction hash for demo purposes
+     */
+    private String generateMockTransactionHash() {
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        StringBuilder txHash = new StringBuilder("0x");
+        
+        // Generate 64 hex characters for a realistic transaction hash
+        for (int i = 0; i < 64; i++) {
+            int digit = random.nextInt(16);
+            txHash.append(Integer.toHexString(digit));
+        }
+        
+        return txHash.toString();
     }
 }

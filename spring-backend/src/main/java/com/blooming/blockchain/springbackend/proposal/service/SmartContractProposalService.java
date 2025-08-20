@@ -109,16 +109,15 @@ public class SmartContractProposalService {
                 long deadlineTimestamp = deadline.toEpochSecond(ZoneOffset.UTC);
                 BigInteger deadlineInSeconds = BigInteger.valueOf(deadlineTimestamp);
                 
-                // createProposal 함수 호출 생성 (ID를 포함하는 버전)
-                // Note: 스마트 컨트랙트도 ID를 받도록 수정되어야 함
+                // 기존 createProposal 함수 호출 (스마트 컨트랙트는 내부적으로 ID를 생성)
+                // 백엔드는 미리 ID를 할당했지만, 스마트 컨트랙트는 원래 방식대로 동작
                 Function createProposalFunction = new Function(
-                    "createProposalWithId",
+                    "createProposal",
                     Arrays.asList(
-                        new Uint256(BigInteger.valueOf(proposalId)),
                         new Utf8String(description),
                         new Uint256(deadlineInSeconds)
                     ),
-                    Arrays.asList(new TypeReference<Uint256>() {}) // 제안 ID 반환 (확인용)
+                    Arrays.asList(new TypeReference<Uint256>() {}) // 제안 ID 반환
                 );
                 
                 // 함수 호출 인코딩
