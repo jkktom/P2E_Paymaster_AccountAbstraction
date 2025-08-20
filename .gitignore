@@ -11,6 +11,7 @@ gradle-app.setting
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+
 # Maven (if used)
 target/
 pom.xml.tag
@@ -271,3 +272,5 @@ paymaster-examples/
 # Ignore compiled smart contracts (we'll commit source only)
 contracts/artifacts/
 contracts/cache/
+
+CLAUDE.md
