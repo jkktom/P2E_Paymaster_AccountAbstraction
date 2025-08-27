@@ -15,6 +15,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Configuration:
+ * - app.jwt.secret: Base64-encoded secret (minimum 64 bytes for HS512)
+ * - app.jwt.expiration: Token lifetime in seconds
+ * 
+ * @see JwtConstants for security requirements and time configurations
+ */
 @Service
 @Slf4j
 public class JwtService {
@@ -63,7 +70,7 @@ public class JwtService {
     // Create JWT token with claims
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration * 1000);
+        Date expiryDate = new Date(now.getTime() + jwtExpiration * JwtConstants.SECONDS_TO_MILLIS);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -107,6 +114,41 @@ public class JwtService {
         return extractClaim(token, claims -> claims.get("smartWalletAddress", String.class));
     }
 
+    // =============== Methods for Refresh Operations (Ignore Expiration) ===============
+
+    // Extract Google ID from token, ignoring expiration (for refresh)
+    public String extractGoogleIdForRefresh(String token) {
+        return extractClaimIgnoreExpiration(token, Claims::getSubject);
+    }
+
+    // Extract email from token, ignoring expiration (for refresh)
+    public String extractEmailForRefresh(String token) {
+        return extractClaimIgnoreExpiration(token, claims -> claims.get("email", String.class));
+    }
+
+    // Extract name from token, ignoring expiration (for refresh)
+    public String extractNameForRefresh(String token) {
+        return extractClaimIgnoreExpiration(token, claims -> claims.get("name", String.class));
+    }
+
+    // Extract roleId from token, ignoring expiration (for refresh)
+    public Byte extractRoleIdForRefresh(String token) {
+        return extractClaimIgnoreExpiration(token, claims -> {
+            Object roleId = claims.get("roleId");
+            if (roleId instanceof Integer) {
+                return ((Integer) roleId).byteValue();
+            } else if (roleId instanceof Byte) {
+                return (Byte) roleId;
+            }
+            return null;
+        });
+    }
+
+    // Extract smart wallet address from token, ignoring expiration (for refresh)
+    public String extractSmartWalletAddressForRefresh(String token) {
+        return extractClaimIgnoreExpiration(token, claims -> claims.get("smartWalletAddress", String.class));
+    }
+
     // Extract expiration date from token
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -130,6 +172,27 @@ public class JwtService {
             log.error("Failed to parse JWT token: {}", e.getMessage());
             throw new RuntimeException("Invalid JWT token", e);
         }
+    }
+
+    // Extract all claims from token, ignoring expiration (for refresh operations)
+    private Claims extractAllClaimsIgnoreExpiration(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .setAllowedClockSkewSeconds(Long.MAX_VALUE) // Effectively ignores expiration
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            log.error("Failed to parse JWT token (ignoring expiration): {}", e.getMessage());
+            throw new RuntimeException("Invalid JWT token signature or format", e);
+        }
+    }
+
+    // Extract specific claim from token, ignoring expiration (for refresh operations)
+    public <T> T extractClaimIgnoreExpiration(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaimsIgnoreExpiration(token);
+        return claimsResolver.apply(claims);
     }
 
     // Check if token is expired
@@ -169,11 +232,12 @@ public class JwtService {
         try {
             // Try to use the configured secret if it's valid
             byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-            if (keyBytes.length >= 64) { // HS512 requires at least 64 bytes (512 bits)
+            if (JwtConstants.isValidHS512KeyLength(keyBytes.length)) {
                 return Keys.hmacShaKeyFor(keyBytes);
             }
         } catch (Exception e) {
-            log.warn("Invalid or weak JWT secret, generating secure key: {}", e.getMessage());
+            log.warn("Invalid or weak JWT secret ({}), generating secure key: {}", 
+                    JwtConstants.getHS512KeyRequirement(), e.getMessage());
         }
         
         // Generate a secure key for HS512 if the configured secret is too weak
@@ -182,15 +246,15 @@ public class JwtService {
 
     // Get JWT expiration time in milliseconds
     public long getExpirationTime() {
-        return jwtExpiration * 1000;
+        return jwtExpiration * JwtConstants.SECONDS_TO_MILLIS;
     }
 
-    // Check if token needs refresh (expires in next 10 minutes)
+    // Check if token needs refresh (expires within configured threshold)
     public boolean shouldRefreshToken(String token) {
         try {
             Date expiration = extractExpiration(token);
-            Date tenMinutesFromNow = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
-            return expiration.before(tenMinutesFromNow);
+            Date refreshThreshold = new Date(System.currentTimeMillis() + JwtConstants.TOKEN_REFRESH_THRESHOLD_MILLIS);
+            return expiration.before(refreshThreshold);
         } catch (Exception e) {
             return true; // If we can't determine, assume refresh is needed
         }

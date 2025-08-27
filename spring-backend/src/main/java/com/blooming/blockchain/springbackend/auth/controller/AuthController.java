@@ -110,6 +110,17 @@ public class AuthController {
             .build());
     }
 
+    /**
+     * Refresh JWT Token Endpoint
+     * 
+     * This endpoint can refresh both valid and expired tokens as long as they are:
+     * - Properly signed with the correct secret
+     * - Not tampered with (signature is valid)
+     * - Contains valid user claims
+     * 
+     * Security Note: Expiration is ignored during refresh to allow users to refresh
+     * expired tokens, but signature validation is still enforced.
+     */
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
@@ -121,18 +132,35 @@ public class AuthController {
         }
 
         String oldToken = authHeader.substring(7);
-        String googleId = jwtService.extractGoogleId(oldToken); // Throws JwtException if invalid
+        
+        // Use refresh-specific extraction methods that ignore expiration
+        // This allows refreshing expired tokens as long as they're properly signed
+        String googleId;
+        String email;
+        String name;
+        Byte roleId;
+        String smartWalletAddress;
+        
+        try {
+            googleId = jwtService.extractGoogleIdForRefresh(oldToken);
+            email = jwtService.extractEmailForRefresh(oldToken);
+            name = jwtService.extractNameForRefresh(oldToken);
+            roleId = jwtService.extractRoleIdForRefresh(oldToken);
+            smartWalletAddress = jwtService.extractSmartWalletAddressForRefresh(oldToken);
+        } catch (Exception e) {
+            log.error("Failed to extract claims from token for refresh: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorResponse.builder()
+                .success(false)
+                .message("Invalid token signature or format")
+                .build());
+        }
+        
         if (googleId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ErrorResponse.builder()
                 .success(false)
-                .message("Invalid token")
+                .message("Invalid token: missing Google ID")
                 .build());
         }
-
-        String email = jwtService.extractEmail(oldToken);
-        String name = jwtService.extractName(oldToken);
-        Byte roleId = jwtService.extractRoleId(oldToken);
-        String smartWalletAddress = jwtService.extractSmartWalletAddress(oldToken);
         
         // Fetch from database for backward compatibility or missing fields
         Optional<User> userOpt = userService.findByGoogleId(googleId);
@@ -150,11 +178,24 @@ public class AuthController {
         
         String newToken = jwtService.generateToken(googleId, email, name, roleId, smartWalletAddress);
 
+        // Check if the old token was expired for informational purposes
+        boolean wasExpired = false;
+        try {
+            wasExpired = jwtService.isTokenExpired(oldToken);
+        } catch (Exception e) {
+            // Token was invalid/expired, but we already extracted claims successfully above
+            wasExpired = true;
+        }
+        
+        String message = wasExpired ? 
+            "Expired token refreshed successfully" : 
+            "Token refreshed successfully";
+
         return ResponseEntity.ok(AuthResponse.builder()
             .success(true)
             .token(newToken)
             .expiresIn(jwtService.getExpirationTime())
-            .message("Token refreshed successfully")
+            .message(message)
             .build());
     }
 
