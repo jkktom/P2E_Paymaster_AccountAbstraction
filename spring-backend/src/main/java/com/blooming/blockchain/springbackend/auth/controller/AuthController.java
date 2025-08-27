@@ -2,6 +2,7 @@ package com.blooming.blockchain.springbackend.auth.controller;
 
 import com.blooming.blockchain.springbackend.auth.dto.*;
 import com.blooming.blockchain.springbackend.auth.jwt.JwtService;
+import com.blooming.blockchain.springbackend.global.enums.RoleType;
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.service.UserService;
 import com.blooming.blockchain.springbackend.userdetail.entity.UserPointToken;
@@ -144,7 +145,7 @@ public class AuthController {
                 smartWalletAddress = user.getSmartWalletAddress();
             }
         } else {
-            roleId = (byte) 2; // Default to USER role
+            roleId = RoleType.USER.getId(); // Default to USER role
         }
         
         String newToken = jwtService.generateToken(googleId, email, name, roleId, smartWalletAddress);

@@ -14,6 +14,18 @@ import java.util.Optional;
 
 /**
  * Proposal Repository - 제안 데이터 접근 계층
+ * 
+ * Query Method Selection Strategy:
+ * - JPQL: Used for complex multi-condition queries where method names would become unwieldy
+ *   Example: "findByExecutedFalseAndCanceledFalseAndDeadlineAfter..." becomes unreadable
+ * - Method Queries: Used for simple, single-condition queries with clear business meaning
+ * - Native SQL: Reserved for performance-critical queries or database-specific features
+ * 
+ * JPQL Advantages in this context:
+ * 1. Readability: SQL-like syntax is more intuitive for complex business logic
+ * 2. Maintainability: Easier to modify complex conditions than method names
+ * 3. Performance: Better control over query optimization
+ * 4. Database Independence: Works across different database vendors
  */
 @Repository
 public interface ProposalRepository extends JpaRepository<Proposal, Integer> {
@@ -27,6 +39,8 @@ public interface ProposalRepository extends JpaRepository<Proposal, Integer> {
 
     /**
      * 활성 제안 조회 (실행되지 않고, 취소되지 않고, 마감되지 않은)
+     * JPQL 사용 이유: 3개 조건을 메서드명으로 표현하면 가독성이 현저히 떨어짐
+     * Method Query 대안: findByExecutedFalseAndCanceledFalseAndDeadlineAfterOrderByCreatedAtDesc
      */
     @Query("SELECT p FROM Proposal p WHERE p.executed = false AND p.canceled = false AND p.deadline > :now ORDER BY p.createdAt DESC")
     List<Proposal> findActiveProposals(@Param("now") LocalDateTime now);

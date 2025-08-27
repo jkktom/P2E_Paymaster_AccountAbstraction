@@ -1,5 +1,6 @@
 package com.blooming.blockchain.springbackend.user.service;
 
+import com.blooming.blockchain.springbackend.global.enums.RoleType;
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.repository.UserRepository;
 import com.blooming.blockchain.springbackend.userdetail.service.UserPointTokenService;
@@ -70,7 +71,7 @@ public class UserService {
                     .name(name)
                     .avatar(avatar)
                     .smartWalletAddress(null) // Will be set after wallet creation
-                    .roleId((byte) 2) // Default USER role
+                    .roleId(RoleType.USER.getId()) // Default USER role
                     .build();
 
             newUser = userRepository.save(newUser);
@@ -146,7 +147,7 @@ public class UserService {
     public Byte getUserRole(String googleId) {
         return userRepository.findByGoogleId(googleId)
                 .map(User::getRoleId)
-                .orElse((byte) 2); // Default USER role
+                .orElse(RoleType.USER.getId()); // Default USER role
     }
 
     // Check if user is admin

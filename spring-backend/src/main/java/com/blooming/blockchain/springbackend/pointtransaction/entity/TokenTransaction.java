@@ -1,5 +1,6 @@
 package com.blooming.blockchain.springbackend.pointtransaction.entity;
 
+import com.blooming.blockchain.springbackend.global.enums.TransactionStatusType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
@@ -40,7 +41,7 @@ public class TokenTransaction {
     private String txHash; // zkSync transaction hash
 
     @Column(name = "transaction_status_id", nullable = false)
-    private Byte transactionStatusId = 1; // 1 = PENDING, 2 = CONFIRMED, 3 = FAILED
+    private Byte transactionStatusId = TransactionStatusType.PENDING.getId(); // Default to PENDING
 
     @Column(name = "gas_sponsored", nullable = false)
     private Boolean gasSponsored = true; // Always true for zkSync AA
@@ -65,7 +66,7 @@ public class TokenTransaction {
         this.mainPointsSpent = mainPointsSpent;
         this.tokensReceived = tokensReceived;
         this.description = description;
-        this.transactionStatusId = 1; // PENDING
+        this.transactionStatusId = TransactionStatusType.PENDING.getId();
         this.gasSponsored = true;
         this.appliedToBalance = false;
     }
@@ -87,23 +88,23 @@ public class TokenTransaction {
     // Helper method to confirm transaction with blockchain hash
     public void confirmTransaction(String txHash) {
         this.txHash = txHash;
-        this.transactionStatusId = 2; // CONFIRMED
+        this.transactionStatusId = TransactionStatusType.CONFIRMED.getId();
         this.appliedToBalance = true;
         this.confirmedAt = LocalDateTime.now();
     }
 
     // Helper method to fail transaction
     public void failTransaction() {
-        this.transactionStatusId = 3; // FAILED
+        this.transactionStatusId = TransactionStatusType.FAILED.getId();
     }
 
     // Check if transaction is confirmed
     public boolean isConfirmed() {
-        return this.transactionStatusId == 2;
+        return this.transactionStatusId == TransactionStatusType.CONFIRMED.getId();
     }
 
     // Check if transaction is pending
     public boolean isPending() {
-        return this.transactionStatusId == 1;
+        return this.transactionStatusId == TransactionStatusType.PENDING.getId();
     }
 }

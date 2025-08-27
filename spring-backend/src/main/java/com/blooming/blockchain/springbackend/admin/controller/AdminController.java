@@ -1,6 +1,8 @@
 package com.blooming.blockchain.springbackend.admin.controller;
 
 import com.blooming.blockchain.springbackend.auth.jwt.JwtService;
+import com.blooming.blockchain.springbackend.global.enums.PointTransactionSource;
+import com.blooming.blockchain.springbackend.global.enums.TransactionStatusType;
 import com.blooming.blockchain.springbackend.pointtransaction.entity.PointTransaction;
 import com.blooming.blockchain.springbackend.pointtransaction.service.PointTransactionService;
 import com.blooming.blockchain.springbackend.user.entity.User;
@@ -74,13 +76,21 @@ public class AdminController {
 
             PointTransaction transaction = null;
             
-            // Execute point granting based on type
+            // Execute point granting based on type using proper enums instead of magic numbers
             if ("MAIN".equals(pointType)) {
-                // Use source ID 3 for ADMIN_GRANT_MAIN
-                transaction = pointTransactionService.earnMainPoints(targetGoogleId, amount, (byte) 3, description);
+                transaction = pointTransactionService.earnMainPoints(
+                    targetGoogleId, 
+                    amount, 
+                    PointTransactionSource.MAIN_ADMIN_GRANT.getId(), 
+                    description
+                );
             } else if ("SUB".equals(pointType)) {
-                // Use source ID 9 for ADMIN_GRANT_SUB
-                transaction = pointTransactionService.earnSubPoints(targetGoogleId, amount, (byte) 9, description);
+                transaction = pointTransactionService.earnSubPoints(
+                    targetGoogleId, 
+                    amount, 
+                    PointTransactionSource.SUB_ADMIN_GRANT.getId(), 
+                    description
+                );
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -95,7 +105,7 @@ public class AdminController {
                         "id", transaction.getId(),
                         "amount", amount,
                         "pointType", pointType,
-                        "status", transaction.getTransactionStatusId() == 2 ? "CONFIRMED" : "PENDING"
+                        "status", TransactionStatusType.fromId(transaction.getTransactionStatusId()).getName()
                     ),
                     "message", "Points granted successfully"
                 ));

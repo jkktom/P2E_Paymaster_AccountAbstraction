@@ -1,5 +1,6 @@
 package com.blooming.blockchain.springbackend.pointtransaction.service;
 
+import com.blooming.blockchain.springbackend.global.enums.TransactionStatusType;
 import com.blooming.blockchain.springbackend.pointtransaction.entity.PointTransaction;
 import com.blooming.blockchain.springbackend.pointtransaction.repository.PointTransactionRepository;
 import com.blooming.blockchain.springbackend.userdetail.service.UserPointTokenService;
@@ -250,7 +251,7 @@ public class PointTransactionService {
     // Get pending transactions
     @Transactional(readOnly = true)
     public List<PointTransaction> getPendingTransactions(String userGoogleId) {
-        return pointTransactionRepository.findByUserGoogleIdAndTransactionStatusId(userGoogleId, (byte) 1);
+        return pointTransactionRepository.findByUserGoogleIdAndTransactionStatusId(userGoogleId, TransactionStatusType.PENDING.getId());
     }
 
     // Get transaction by ID
@@ -274,7 +275,7 @@ public class PointTransactionService {
     // Check if user has pending transactions
     @Transactional(readOnly = true)
     public boolean hasPendingTransactions(String userGoogleId) {
-        return pointTransactionRepository.existsByUserGoogleIdAndTransactionStatusId(userGoogleId, (byte) 1);
+        return pointTransactionRepository.existsByUserGoogleIdAndTransactionStatusId(userGoogleId, TransactionStatusType.PENDING.getId());
     }
 
     // Inner class for user statistics

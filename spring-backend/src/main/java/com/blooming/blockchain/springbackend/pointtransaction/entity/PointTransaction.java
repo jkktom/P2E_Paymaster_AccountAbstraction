@@ -1,6 +1,9 @@
 package com.blooming.blockchain.springbackend.pointtransaction.entity;
 
 import com.blooming.blockchain.springbackend.global.entity.PointEarnSpendSource;
+import com.blooming.blockchain.springbackend.global.enums.PointTransactionSource;
+import com.blooming.blockchain.springbackend.global.enums.PointType;
+import com.blooming.blockchain.springbackend.global.enums.TransactionStatusType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
@@ -71,12 +74,12 @@ public class PointTransaction {
         this.pointTypeId = pointTypeId;
         this.sourceId = sourceId;
         this.description = description;
-        this.transactionStatusId = 1; // PENDING
+        this.transactionStatusId = TransactionStatusType.PENDING.getId();
     }
 
     // Static factory method for main point earning (with description)
     public static PointTransaction createMainEarn(String userGoogleId, Integer amount, Byte sourceId, String description) {
-        PointTransaction transaction = new PointTransaction(userGoogleId, (byte) 1, sourceId, description);
+        PointTransaction transaction = new PointTransaction(userGoogleId, PointType.MAIN.getId(), sourceId, description);
         transaction.mainEarnAmount = amount;
         return transaction;
     }
@@ -88,7 +91,7 @@ public class PointTransaction {
 
     // Static factory method for sub point earning (with description)
     public static PointTransaction createSubEarn(String userGoogleId, Integer amount, Byte sourceId, String description) {
-        PointTransaction transaction = new PointTransaction(userGoogleId, (byte) 2, sourceId, description);
+        PointTransaction transaction = new PointTransaction(userGoogleId, PointType.SUB.getId(), sourceId, description);
         transaction.subEarnAmount = amount;
         return transaction;
     }
@@ -100,7 +103,7 @@ public class PointTransaction {
 
     // Static factory method for sub to main point conversion (with description)
     public static PointTransaction createSubToMainConversion(String userGoogleId, Integer subPointsSpent, String description) {
-        PointTransaction transaction = new PointTransaction(userGoogleId, (byte) 2, (byte) 11, description); // sourceId 11 = SUB_CONVERSION
+        PointTransaction transaction = new PointTransaction(userGoogleId, PointType.SUB.getId(), PointTransactionSource.SUB_CONVERSION.getId(), description);
         transaction.subConvertedAmount = subPointsSpent;
         transaction.mainEarnAmount = subPointsSpent / SUB_TO_MAIN_RATIO;
         return transaction;
@@ -113,7 +116,7 @@ public class PointTransaction {
 
     // Static factory method for main to token exchange (with description)
     public static PointTransaction createMainToTokenExchange(String userGoogleId, Integer mainPointsSpent, String description) {
-        PointTransaction transaction = new PointTransaction(userGoogleId, (byte) 1, (byte) 5, description); // sourceId 5 = MAIN_EXCHANGE
+        PointTransaction transaction = new PointTransaction(userGoogleId, PointType.MAIN.getId(), PointTransactionSource.MAIN_EXCHANGE.getId(), description);
         transaction.mainExchangedAmount = mainPointsSpent;
         return transaction;
     }
@@ -125,25 +128,25 @@ public class PointTransaction {
 
     // Helper method to confirm transaction
     public void confirmTransaction() {
-        this.transactionStatusId = 2; // CONFIRMED
+        this.transactionStatusId = TransactionStatusType.CONFIRMED.getId();
     }
 
     // Helper method to fail transaction
     public void failTransaction() {
-        this.transactionStatusId = 3; // FAILED
+        this.transactionStatusId = TransactionStatusType.FAILED.getId();
     }
 
-    // Status check methods
+    // Status check methods using enum instead of magic numbers
     public boolean isConfirmed() {
-        return this.transactionStatusId == 2;
+        return this.transactionStatusId == TransactionStatusType.CONFIRMED.getId();
     }
 
     public boolean isPending() {
-        return this.transactionStatusId == 1;
+        return this.transactionStatusId == TransactionStatusType.PENDING.getId();
     }
 
     public boolean isFailed() {
-        return this.transactionStatusId == 3;
+        return this.transactionStatusId == TransactionStatusType.FAILED.getId();
     }
 
     // Get total transaction amount based on transaction type
