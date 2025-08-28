@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { authAPI } from '@/lib/api'
 import type { User } from '@/types'
 
+// Google OAuth Configuration
+const GOOGLE_CLIENT_ID = '1041570512238-c1d24j95hjctqmd9k9i291o2evvemi5j.apps.googleusercontent.com'
+
 interface GoogleAuthProps {
   onAuthSuccess: (user: User) => void
 }
@@ -55,7 +58,7 @@ export default function GoogleAuth({ onAuthSuccess }: GoogleAuthProps) {
   const initializeGoogleSignIn = () => {
     if (typeof window !== 'undefined' && window.google) {
       window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleResponse,
         auto_select: false,
         cancel_on_tap_outside: true,

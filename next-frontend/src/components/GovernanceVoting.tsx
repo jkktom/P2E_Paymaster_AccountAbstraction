@@ -5,6 +5,9 @@ import { getGovernanceTokenContract, getZkSyncProvider, createGaslessTransaction
 import { Wallet } from 'zksync-ethers'
 import type { Proposal, User, WalletState, TransactionStatus } from '@/types'
 
+// zkSync Era Sepolia Contract Addresses (deployed and public)
+const GOVERNANCE_TOKEN_ADDRESS = '0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e'
+
 interface GovernanceVotingProps {
   user: User
   wallet: WalletState
@@ -79,7 +82,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
       // Create gasless delegation transaction
       const tx = await createGaslessTransaction(
         zkWallet,
-        process.env.NEXT_PUBLIC_GOVERNANCE_TOKEN_ADDRESS!,
+        GOVERNANCE_TOKEN_ADDRESS,
         'delegateVoting',
         [wallet.address]
       )
@@ -117,7 +120,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
       // Create gasless proposal transaction
       const tx = await createGaslessTransaction(
         zkWallet,
-        process.env.NEXT_PUBLIC_GOVERNANCE_TOKEN_ADDRESS!,
+        GOVERNANCE_TOKEN_ADDRESS,
         'createProposal',
         [newProposalDesc, deadline]
       )
@@ -153,7 +156,7 @@ export default function GovernanceVoting({ user, wallet }: GovernanceVotingProps
       // Create gasless vote transaction
       const tx = await createGaslessTransaction(
         zkWallet,
-        process.env.NEXT_PUBLIC_GOVERNANCE_TOKEN_ADDRESS!,
+        GOVERNANCE_TOKEN_ADDRESS,
         'vote',
         [proposalId, support]
       )

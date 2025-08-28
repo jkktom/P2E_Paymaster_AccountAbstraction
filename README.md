@@ -61,12 +61,10 @@ cd spring-backend
 - 서버가 `http://localhost:8080`에서 실행됩니다
 - H2 콘솔: `http://localhost:8080/h2-console`
 
-### 3. Frontend 설정 및 실행  *{.env.local} 생성 필요*
+### 3. Frontend 설정 및 실행
 ```bash
 cd next-frontend
 
-# 환경 변수 설정
-cp env_sample .env.local
 
 # 의존성 설치 및 실행
 npm install
