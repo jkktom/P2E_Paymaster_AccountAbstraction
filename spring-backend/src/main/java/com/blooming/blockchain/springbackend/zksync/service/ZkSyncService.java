@@ -127,9 +127,6 @@ public class ZkSyncService {
                 .userId(userId)
                 .walletAddress(walletAddress)
                 .encryptedPrivateKey(encryptedPrivateKey)
-                .walletType("ZKSYNC_SMART_WALLET")
-                .network("zkSync Era Sepolia")
-                .chainId(chainId)
                 .isActive(true)
                 .build();
             
@@ -172,8 +169,6 @@ public class ZkSyncService {
             
             String privateKey = walletEncryption.decryptPrivateKey(userWallet.getEncryptedPrivateKey());
             
-            // Mark wallet as used
-            userWallet.markAsUsed();
             userWalletRepository.save(userWallet);
             
             log.debug("Retrieved private key for wallet: {}", userWallet.getShortAddress());

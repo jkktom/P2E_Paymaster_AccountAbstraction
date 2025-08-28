@@ -48,6 +48,7 @@ public class ProposalVoteCount {
      */
     @Version
     @Column(name = "version")
+    @Builder.Default
     private Long version = 0L;
 
     /**

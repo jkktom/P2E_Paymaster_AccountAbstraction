@@ -94,7 +94,7 @@ public class PointsController {
         return ResponseEntity.ok(PointsResponse.builder()
             .success(true)
             .mainPointsReceived(mainPointsReceived)
-            .conversionRate(PointTransaction.getSubToMainRatio())
+            .conversionRate((int) PointTransaction.getSubToMainRatio())
             .message("Points converted successfully")
             .build());
     }
