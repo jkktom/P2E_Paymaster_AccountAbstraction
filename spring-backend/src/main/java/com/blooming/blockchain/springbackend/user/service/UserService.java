@@ -34,15 +34,15 @@ public class UserService {
             boolean updated = false;
 
             if (!email.equals(user.getEmail())) {
-                user.setEmail(email);
+                user.updateEmail(email);
                 updated = true;
             }
             if (!name.equals(user.getName())) {
-                user.setName(name);
+                user.updateName(name);
                 updated = true;
             }
             if (avatar != null && !avatar.equals(user.getAvatar())) {
-                user.setAvatar(avatar);
+                user.updateAvatar(avatar);
                 updated = true;
             }
 
@@ -50,7 +50,7 @@ public class UserService {
             if (!user.hasSmartWallet()) {
                 log.info("Creating secure smart wallet for existing user: {} ({})", name, email);
                 UserWallet userWallet = zkSyncService.createAndStoreSmartWallet(user.getId(), email);
-                user.setSmartWalletAddress(userWallet.getWalletAddress());
+                user.updateSmartWalletAddress(userWallet.getWalletAddress());
                 updated = true;
                 log.info("Added secure smart wallet to existing user: {} -> {}", email, userWallet.getShortAddress());
             }
@@ -81,7 +81,7 @@ public class UserService {
             UserWallet userWallet = zkSyncService.createAndStoreSmartWallet(newUser.getId(), email);
             
             // Update user with wallet address
-            newUser.setSmartWalletAddress(userWallet.getWalletAddress());
+            newUser.updateSmartWalletAddress(userWallet.getWalletAddress());
             newUser = userRepository.save(newUser);
 
             // Initialize user point balance (0, 0, 0)
@@ -119,12 +119,12 @@ public class UserService {
         boolean updated = false;
         
         if (name != null && !name.equals(user.getName())) {
-            user.setName(name);
+            user.updateName(name);
             updated = true;
         }
         
         if (avatar != null && !avatar.equals(user.getAvatar())) {
-            user.setAvatar(avatar);
+            user.updateAvatar(avatar);
             updated = true;
         }
 

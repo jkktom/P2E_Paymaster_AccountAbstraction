@@ -116,7 +116,6 @@ bin/
 *.key
 *.keystore
 *.json.key
-wallet/
 keystore/
 
 # Hardhat

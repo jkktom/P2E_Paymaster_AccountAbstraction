@@ -1,5 +1,6 @@
 package com.blooming.blockchain.springbackend.user.entity;
 
+import com.blooming.blockchain.springbackend.global.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,7 +11,6 @@ import java.util.UUID;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
@@ -50,14 +50,47 @@ public class User {
 
     // Business methods
     public boolean isAdmin() {
-        return this.roleId == 1;
+        return this.roleId.equals(RoleType.ADMIN.getId());
     }
 
     public boolean isUser() {
-        return this.roleId == 2;
+        return this.roleId.equals(RoleType.USER.getId());
+    }
+
+    public RoleType getRoleType() {
+        return RoleType.fromId(this.roleId);
     }
 
     public boolean hasSmartWallet() {
         return this.smartWalletAddress != null && !this.smartWalletAddress.trim().isEmpty();
+    }
+
+    // Controlled update methods for legitimate business operations
+    public void updateEmail(String email) {
+        if (email != null && !email.trim().isEmpty()) {
+            this.email = email;
+        }
+    }
+
+    public void updateName(String name) {
+        if (name != null && !name.trim().isEmpty()) {
+            this.name = name;
+        }
+    }
+
+    public void updateAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public void updateSmartWalletAddress(String smartWalletAddress) {
+        if (smartWalletAddress != null && !smartWalletAddress.trim().isEmpty()) {
+            this.smartWalletAddress = smartWalletAddress;
+        }
+    }
+
+    public void setRole(RoleType roleType) {
+        if (roleType != null) {
+            this.roleId = roleType.getId();
+        }
     }
 }

@@ -6,6 +6,7 @@ import com.blooming.blockchain.springbackend.exception.InsufficientPointsExcepti
 import com.blooming.blockchain.springbackend.exception.InvalidRequestException;
 import com.blooming.blockchain.springbackend.pointtransaction.entity.PointTransaction;
 import com.blooming.blockchain.springbackend.pointtransaction.service.PointTransactionService;
+import com.blooming.blockchain.springbackend.points.dto.PointsResponse;
 import com.blooming.blockchain.springbackend.user.entity.User;
 import com.blooming.blockchain.springbackend.user.service.UserService;
 import com.blooming.blockchain.springbackend.userdetail.entity.UserPointToken;
@@ -43,12 +44,12 @@ public class PointsController {
         // Calculate total earned and points to token from transactions
         PointTransactionService.UserPointStatistics stats = pointTransactionService.getUserStatistics(googleId);
 
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "balance", balance.getMainPoint(),
-            "totalEarned", stats.getTotalMainPointsEarned(),
-            "pointsToToken", stats.getTotalMainPointsExchanged()
-        ));
+        return ResponseEntity.ok(PointsResponse.builder()
+            .success(true)
+            .balance(balance.getMainPoint())
+            .totalEarned(stats.getTotalMainPointsEarned())
+            .pointsToToken(stats.getTotalMainPointsExchanged())
+            .build());
     }
 
     // Get current user's sub point balance
@@ -62,12 +63,12 @@ public class PointsController {
         // Calculate total earned and sub to main from transactions
         PointTransactionService.UserPointStatistics stats = pointTransactionService.getUserStatistics(googleId);
 
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "balance", balance.getSubPoint(),
-            "totalEarned", stats.getTotalSubPointsEarned(),
-            "subToMain", stats.getTotalSubPointsConverted()
-        ));
+        return ResponseEntity.ok(PointsResponse.builder()
+            .success(true)
+            .balance(balance.getSubPoint())
+            .totalEarned(stats.getTotalSubPointsEarned())
+            .subToMain(stats.getTotalSubPointsConverted())
+            .build());
     }
 
     // Convert sub points to main points
@@ -90,12 +91,12 @@ public class PointsController {
         // Calculate main points received using current ratio
         Integer mainPointsReceived = subPoints / PointTransaction.getSubToMainRatio();
         
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "mainPointsReceived", mainPointsReceived,
-            "conversionRate", PointTransaction.getSubToMainRatio(),
-            "message", "Points converted successfully"
-        ));
+        return ResponseEntity.ok(PointsResponse.builder()
+            .success(true)
+            .mainPointsReceived(mainPointsReceived)
+            .conversionRate(PointTransaction.getSubToMainRatio())
+            .message("Points converted successfully")
+            .build());
     }
 
     // Get current user's complete balance info
@@ -106,13 +107,13 @@ public class PointsController {
         UserPointToken balance = userPointTokenService.getUserBalance(googleId)
             .orElse(new UserPointToken(googleId, 0, 0, 0L));
 
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "mainPoint", balance.getMainPoint(),
-            "subPoint", balance.getSubPoint(),
-            "tokenBalance", balance.getTokenBalance(),
-            "updatedAt", balance.getUpdatedAt()
-        ));
+        return ResponseEntity.ok(PointsResponse.builder()
+            .success(true)
+            .balance(balance.getMainPoint())
+            .subToMain(balance.getSubPoint())
+            .tokenBalance(balance.getTokenBalance())
+            .updatedAt(balance.getUpdatedAt().toString())
+            .build());
     }
 
     // Helper method to extract Google ID from JWT token
