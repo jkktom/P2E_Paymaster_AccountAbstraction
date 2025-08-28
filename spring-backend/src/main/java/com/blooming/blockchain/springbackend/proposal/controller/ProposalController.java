@@ -12,9 +12,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -32,9 +36,22 @@ public class ProposalController {
      * 새로운 제안 생성 (스마트 컨트랙트 통합)
      */
     @PostMapping
-    public ResponseEntity<ProposalResponse> createProposal(@Valid @RequestBody CreateProposalRequest request) {
-        log.info("Creating proposal: user={}, description={}", 
-                request.getProposerGoogleId(), request.getDescription().substring(0, Math.min(50, request.getDescription().length())));
+    public ResponseEntity<?> createProposal(@Valid @RequestBody CreateProposalRequest request, BindingResult bindingResult) {
+        log.info("Creating proposal request received: {}", request);
+        log.info("Request details - user={}, description length={}, deadline={}", 
+                request.getProposerGoogleId(), 
+                request.getDescription() != null ? request.getDescription().length() : "null",
+                request.getDeadline());
+
+        if (bindingResult.hasErrors()) {
+            log.error("Validation errors in proposal creation request:");
+            Map<String, String> errors = new HashMap<>();
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                log.error("Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
+                errors.put(error.getField(), error.getDefaultMessage());
+            }
+            return ResponseEntity.badRequest().body(Map.of("errors", errors));
+        }
 
         try {
             Proposal proposal = proposalService.createProposalWithSmartContract(
@@ -48,7 +65,8 @@ public class ProposalController {
 
         } catch (Exception e) {
             log.error("Failed to create proposal: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Proposal creation failed: " + e.getMessage()));
         }
     }
 

@@ -25,7 +25,6 @@ import java.util.Optional;
 @RequestMapping("/api/points")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class PointsController {
 
     private final JwtService jwtService;

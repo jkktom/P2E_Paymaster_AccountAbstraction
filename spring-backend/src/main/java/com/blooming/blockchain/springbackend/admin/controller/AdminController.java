@@ -23,7 +23,6 @@ import java.util.Optional;
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class AdminController {
 
     private final JwtService jwtService;

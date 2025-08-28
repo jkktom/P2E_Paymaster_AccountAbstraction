@@ -21,7 +21,6 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "${app.cors.allowed-origins}", allowCredentials = "true")
 public class AuthController {
 
     private final JwtService jwtService;

@@ -64,11 +64,20 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
       setError(null);
       setSuccess(null);
 
+      // Format deadline for LocalDateTime (yyyy-MM-ddTHH:mm:ss)
+      const formattedDeadline = deadlineDate.toISOString().slice(0, 19);
+      
       const proposalRequest = {
         description: description.trim(),
         proposerGoogleId: user.googleId,
-        deadline: deadlineDate.toISOString(),
+        deadline: formattedDeadline,
       };
+
+      console.log('🚀 Creating proposal with data:', {
+        description: proposalRequest.description.substring(0, 50) + '...',
+        proposerGoogleId: proposalRequest.proposerGoogleId,
+        deadline: proposalRequest.deadline
+      });
 
       const response = await axios.post(`${API_BASE_URL}/api/proposals`, proposalRequest, {
         headers: {
@@ -91,8 +100,21 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
       }
 
     } catch (error: any) {
-      console.error('제안 생성 중 오류 발생:', error);
-      const errorMessage = error.response?.data?.message || '제안 생성 중 오류가 발생했습니다.';
+      console.error('❌ 제안 생성 중 오류 발생:', error);
+      console.error('❌ Error response data:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
+      
+      let errorMessage = '제안 생성 중 오류가 발생했습니다.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data) {
+        errorMessage = `${error.response.status}: ${JSON.stringify(error.response.data)}`;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);

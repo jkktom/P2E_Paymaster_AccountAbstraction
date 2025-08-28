@@ -265,8 +265,9 @@ public class ZkSyncController {
                 // Mark transaction as failed
                 tokenTransactionService.failTokenTransaction(tokenTransaction.getId());
                 
-                // Rollback: add back 10 main points
-                userPointTokenService.addMainPoints(googleId, MAIN_POINTS_TO_EXCHANGE);
+                // Rollback DB balances: add back 10 main points and remove 1 token worth in wei
+                userPointTokenService.revertExchangeMainPointsToTokens(
+                    googleId, MAIN_POINTS_TO_EXCHANGE, TOKEN_AMOUNT_WEI.longValue());
                 
                 return ResponseEntity.internalServerError().body(Map.of(
                     "success", false,

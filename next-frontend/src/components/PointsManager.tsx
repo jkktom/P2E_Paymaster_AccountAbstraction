@@ -130,20 +130,35 @@ export default function PointsManager({ user }: PointsManagerProps) {
     try {
       // Call backend token exchange API (handles both DB update and blockchain tx)
       const result = await exchangeAPI.pointsToTokens(10)
+      
+      // Show success immediately
       setTxStatus({ 
         status: 'success',
-        hash: result.txHash 
+        hash: result.transactionHash || result.txHash 
       })
-      await fetchPointsData()
-      await refreshBalance() // Update header balance including token balance
+      
+      // Wait for blockchain confirmation before refreshing
+      console.log('🎉 Token exchange successful!', result)
+      
+      // Wait 3 seconds for blockchain processing, then refresh
+      setTimeout(async () => {
+        await fetchPointsData()
+        await refreshBalance() // Update header balance including token balance
+      }, 3000)
+      
     } catch (error: any) {
       console.error('Failed to exchange tokens:', error)
+      console.error('Error details:', error.response?.data)
+      
       setTxStatus({ 
         status: 'error', 
-        error: error.response?.data?.message || 'Failed to exchange tokens' 
+        error: error.response?.data?.error || error.response?.data?.message || 'Failed to exchange tokens' 
       })
     } finally {
-      setIsLoading(false)
+      // Keep loading state for the full 3 seconds to show processing
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 3000)
     }
   }
 

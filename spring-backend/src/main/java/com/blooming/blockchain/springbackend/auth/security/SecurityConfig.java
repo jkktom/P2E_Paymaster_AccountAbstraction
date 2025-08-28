@@ -10,12 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -24,9 +19,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
-
-    @Value("${app.cors.allowed-origins}")
-    private String allowedOrigins;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -37,8 +30,8 @@ public class SecurityConfig {
             // Allow H2 console frames
             .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
             
-            // Configure CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // Configure CORS (using global CorsConfig)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             
             // Configure session management (stateless for JWT)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -102,41 +95,5 @@ public class SecurityConfig {
             );
 
         return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Set allowed origins from application properties
-        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins.split(",")));
-        
-        // Set allowed methods
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        
-        // Set allowed headers
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type", 
-            "X-Requested-With",
-            "Accept",
-            "Origin",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-        ));
-        
-        // Set exposed headers
-        configuration.setExposedHeaders(Arrays.asList("Authorization"));
-        
-        // Allow credentials for OAuth2
-        configuration.setAllowCredentials(true);
-        
-        // Set max age for preflight requests
-        configuration.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        
-        return source;
     }
 }

@@ -26,6 +26,32 @@ public class UserPointTokenService {
                 });
     }
 
+    // Revert exchange: add back main points and subtract tokens
+    public boolean revertExchangeMainPointsToTokens(String userGoogleId, Integer mainAmount, Long tokenAmount) {
+        if (mainAmount <= 0 || tokenAmount <= 0L) {
+            log.warn("Invalid revert amounts - main: {}, tokens: {} for user: {}", mainAmount, tokenAmount, userGoogleId);
+            return false;
+        }
+
+        try {
+            UserPointToken balance = getOrCreateUserBalance(userGoogleId);
+            // Ensure we won't go negative on token balance
+            if (balance.getTokenBalance() < tokenAmount) {
+                log.warn("Insufficient token balance to revert. User: {}, Required: {}, Available: {}",
+                        userGoogleId, tokenAmount, balance.getTokenBalance());
+                return false;
+            }
+
+            balance.setMainPoint(balance.getMainPoint() + mainAmount);
+            balance.setTokenBalance(balance.getTokenBalance() - tokenAmount);
+            userPointTokenRepository.save(balance);
+            log.info("Reverted exchange for user: {} (main +{}, tokens -{})", userGoogleId, mainAmount, tokenAmount);
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to revert exchange for user: {}", userGoogleId, e);
+            return false;
+        }
+    }
     // Get user balance (read-only)
     @Transactional(readOnly = true)
     public Optional<UserPointToken> getUserBalance(String userGoogleId) {
@@ -174,22 +200,27 @@ public class UserPointTokenService {
             return false;
         }
 
-        // Check if user has sufficient main points
-        Optional<Integer> currentMainBalance = userPointTokenRepository.getMainPointBalance(userGoogleId);
-        if (currentMainBalance.isEmpty() || currentMainBalance.get() < mainAmount) {
-            log.warn("Insufficient main points for exchange. User: {}, Required: {}, Available: {}", 
-                    userGoogleId, mainAmount, currentMainBalance.orElse(0));
+        // Ensure user balance record exists and load entity
+        UserPointToken balance = getOrCreateUserBalance(userGoogleId);
+
+        // Validate sufficient balance
+        if (balance.getMainPoint() < mainAmount) {
+            log.warn("Insufficient main points for exchange. User: {}, Required: {}, Available: {}",
+                    userGoogleId, mainAmount, balance.getMainPoint());
             return false;
         }
 
-        int updatedRows = userPointTokenRepository.exchangeMainPointsToTokens(userGoogleId, mainAmount, tokenAmount);
-        if (updatedRows > 0) {
-            log.info("Exchanged {} main points to {} tokens for user: {}", mainAmount, tokenAmount, userGoogleId);
+        try {
+            // Apply atomic exchange on the managed entity
+            balance.exchangeMainPointsToTokens(mainAmount, tokenAmount);
+            userPointTokenRepository.save(balance);
+            log.info("Exchanged {} main points to {} tokens for user: {} (new main: {}, new tokens: {})",
+                    mainAmount, tokenAmount, userGoogleId, balance.getMainPoint(), balance.getTokenBalance());
             return true;
+        } catch (Exception e) {
+            log.error("Failed to exchange points to tokens for user: {}", userGoogleId, e);
+            return false;
         }
-        
-        log.error("Failed to exchange points to tokens for user: {}", userGoogleId);
-        return false;
     }
 
     // Get individual balance amounts (read-only methods)
