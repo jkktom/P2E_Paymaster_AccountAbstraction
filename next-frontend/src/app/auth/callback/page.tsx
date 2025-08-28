@@ -31,16 +31,20 @@ function AuthCallbackContent() {
       console.log('🔑 Token received in callback:', token.substring(0, 50) + '...')
       
       // Store token and redirect to home
-      localStorage.setItem('jwtToken', token)
-      console.log('💾 Token stored in localStorage')
-      
-      // Also set the Authorization header immediately
-      if (typeof window !== 'undefined') {
-        // Import and use the setAuthToken function
-        import('@/lib/api').then(({ setAuthToken }) => {
-          setAuthToken(token)
-          console.log('🔐 Authorization header set')
-        })
+      try {
+        localStorage.setItem('jwtToken', token)
+        localStorage.setItem('token', token) // For compatibility with getAuthHeaders
+        console.log('💾 Token stored in localStorage as jwtToken')
+        console.log('🔐 Token stored in localStorage as token')
+        
+        // Verify storage
+        const storedJwt = localStorage.getItem('jwtToken')
+        const storedToken = localStorage.getItem('token')
+        console.log('✅ Verification - jwtToken stored:', !!storedJwt)
+        console.log('✅ Verification - token stored:', !!storedToken)
+        console.log('🗂️ All localStorage keys:', Object.keys(localStorage))
+      } catch (error) {
+        console.error('❌ Failed to store token:', error)
       }
       
       setStatus('success')

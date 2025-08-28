@@ -34,10 +34,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (token) {
         try {
-          console.log('📡 Making API call to get profile...')
-          // Validate token by getting user profile
-          const response = await authAPI.getProfile()
-          console.log('📥 Auth profile response:', response)
+          console.log('📡 Making API call to get user info...')
+          // Validate token by getting current user info (this endpoint exists)
+          const response = await authAPI.getCurrentUser()
+          console.log('📥 Auth user response:', response)
           // The response has this structure: { success: true, user: {...}, balance: {...} }
           if (response.success && response.user) {
             console.log('✅ User authenticated:', response.user.name)
@@ -130,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshBalance = async () => {
     if (user) {
       try {
-        const response = await authAPI.getProfile()
+        const response = await authAPI.getCurrentUser()
         if (response.success && response.balance) {
           setBalance(response.balance)
         }

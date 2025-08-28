@@ -52,14 +52,18 @@ export default function Header() {
                   src={user.avatar} 
                   alt="Profile" 
                   className="w-8 h-8 rounded-full"
+                  onError={(e) => {
+                    console.log('❌ Avatar failed to load:', user.avatar);
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
                 />
-              ) : (
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-white">
-                    {user.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              ) : null}
+              <div className={`w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center ${user.avatar ? 'hidden' : ''}`}>
+                <span className="text-sm font-bold text-white">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
               <div className="text-right">
                 <p className="font-medium text-sm">{user.name}</p>
                 <div className="flex items-center space-x-2">

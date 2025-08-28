@@ -56,13 +56,23 @@ export default function Home() {
               <div className="mb-4 p-4 bg-white rounded-lg border">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    {user?.avatar && (
+                    {user?.avatar ? (
                       <img 
                         src={user.avatar} 
                         alt="Profile" 
                         className="w-10 h-10 rounded-full"
+                        onError={(e) => {
+                          console.log('❌ Avatar failed to load on main page:', user.avatar);
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                        }}
                       />
-                    )}
+                    ) : null}
+                    <div className={`w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center ${user?.avatar ? 'hidden' : ''}`}>
+                      <span className="text-lg font-bold text-white">
+                        {user?.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                     <div>
                       <p className="font-medium">{user?.name}</p>
                       <p className="text-sm">{user?.email}</p>
