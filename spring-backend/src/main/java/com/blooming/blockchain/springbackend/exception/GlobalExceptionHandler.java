@@ -1,6 +1,7 @@
 package com.blooming.blockchain.springbackend.exception;
 
 import com.blooming.blockchain.springbackend.auth.dto.ErrorResponse;
+import com.blooming.blockchain.springbackend.auth.dto.InsufficientPointsErrorResponse;
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -54,8 +55,21 @@ public class GlobalExceptionHandler {
     }
     
     @ExceptionHandler(InsufficientPointsException.class)
-    public ResponseEntity<ErrorResponse> handleInsufficientPointsException(InsufficientPointsException ex, WebRequest request) {
+    public ResponseEntity<?> handleInsufficientPointsException(InsufficientPointsException ex, WebRequest request) {
         log.warn("Insufficient points: {}", ex.getMessage());
+        
+        // If we have specific point values, return detailed response
+        if (ex.getCurrentPoints() != null && ex.getRequiredPoints() != null) {
+            InsufficientPointsErrorResponse errorResponse = InsufficientPointsErrorResponse.builder()
+                .success(false)
+                .error(ex.getMessage())
+                .currentMainPoints(ex.getCurrentPoints())
+                .requiredMainPoints(ex.getRequiredPoints())
+                .build();
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+        
+        // Fallback to simple error response
         ErrorResponse errorResponse = ErrorResponse.builder()
             .success(false)
             .message(ex.getMessage())
@@ -73,6 +87,26 @@ public class GlobalExceptionHandler {
             .error("INVALID_REQUEST")
             .build();
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+    
+    @ExceptionHandler(DatabaseUpdateException.class)
+    public ResponseEntity<ErrorResponse> handleDatabaseUpdateException(DatabaseUpdateException ex, WebRequest request) {
+        log.error("Database update failed: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .success(false)
+            .error(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    @ExceptionHandler(BlockchainTransactionException.class)
+    public ResponseEntity<ErrorResponse> handleBlockchainTransactionException(BlockchainTransactionException ex, WebRequest request) {
+        log.error("Blockchain transaction failed: {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .success(false)
+            .error(ex.getMessage())
+            .build();
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // =============== Validation Exceptions ===============

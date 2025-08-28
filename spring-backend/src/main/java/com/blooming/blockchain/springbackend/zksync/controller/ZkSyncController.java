@@ -1,12 +1,17 @@
 package com.blooming.blockchain.springbackend.zksync.controller;
 
 import com.blooming.blockchain.springbackend.auth.jwt.JwtService;
+import com.blooming.blockchain.springbackend.exception.BlockchainTransactionException;
+import com.blooming.blockchain.springbackend.exception.DatabaseUpdateException;
+import com.blooming.blockchain.springbackend.exception.InsufficientPointsException;
 import com.blooming.blockchain.springbackend.pointtransaction.entity.TokenTransaction;
 import com.blooming.blockchain.springbackend.pointtransaction.repository.PointTransactionRepository;
 import com.blooming.blockchain.springbackend.pointtransaction.service.PointTransactionService;
 import com.blooming.blockchain.springbackend.pointtransaction.service.TokenTransactionService;
 import com.blooming.blockchain.springbackend.userdetail.service.UserPointTokenService;
+import com.blooming.blockchain.springbackend.zksync.dto.PaymasterStatusResponse;
 import com.blooming.blockchain.springbackend.zksync.dto.TokenExchangeResponse;
+import com.blooming.blockchain.springbackend.zksync.dto.WalletBalanceResponse;
 import com.blooming.blockchain.springbackend.zksync.service.ZkSyncService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,14 +48,13 @@ public class ZkSyncController {
         try {
             ZkSyncService.PaymasterStats stats = zkSyncService.getPaymasterStats();
             
-            Map<String, Object> response = new HashMap<>();
-            response.put("address", stats.getAddress());
-            response.put("balance", stats.getBalance().toString());
-            response.put("balanceInEth", formatEthBalance(stats.getBalance()));
-            response.put("isActive", stats.isActive());
-            response.put("governanceTokenAddress", stats.getGovernanceTokenAddress());
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(PaymasterStatusResponse.builder()
+                .address(stats.getAddress())
+                .balance(stats.getBalance().toString())
+                .balanceInEth(formatEthBalance(stats.getBalance()))
+                .isActive(stats.isActive())
+                .governanceTokenAddress(stats.getGovernanceTokenAddress())
+                .build());
         } catch (Exception e) {
             log.error("Failed to get paymaster status", e);
             return ResponseEntity.internalServerError()
@@ -79,14 +83,13 @@ public class ZkSyncController {
             BigInteger ethBalance = zkSyncService.getWalletBalance(smartWalletAddress).join();
             BigInteger tokenBalance = zkSyncService.getGovernanceTokenBalance(smartWalletAddress).join();
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("address", smartWalletAddress);
-            response.put("ethBalance", ethBalance.toString());
-            response.put("ethBalanceFormatted", formatEthBalance(ethBalance));
-            response.put("governanceTokenBalance", tokenBalance.toString());
-            response.put("governanceTokenBalanceFormatted", formatTokenBalance(tokenBalance));
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(WalletBalanceResponse.builder()
+                .address(smartWalletAddress)
+                .ethBalance(ethBalance.toString())
+                .ethBalanceFormatted(formatEthBalance(ethBalance))
+                .governanceTokenBalance(tokenBalance.toString())
+                .governanceTokenBalanceFormatted(formatTokenBalance(tokenBalance))
+                .build());
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(401).body(Map.of("error", "Token expired"));
         } catch (Exception e) {
@@ -126,12 +129,7 @@ public class ZkSyncController {
             // Check user's current main point balance
             Integer currentMainPoints = userPointTokenService.getMainPointBalance(googleId);
             if (currentMainPoints < MAIN_POINTS_TO_EXCHANGE) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "error", String.format("Insufficient main points. You have %d, need 10 for exchange", currentMainPoints),
-                    "currentMainPoints", currentMainPoints,
-                    "requiredMainPoints", MAIN_POINTS_TO_EXCHANGE
-                ));
+                throw new InsufficientPointsException(currentMainPoints, MAIN_POINTS_TO_EXCHANGE);
             }
 
             // Step 1: Create token transaction record
@@ -149,10 +147,7 @@ public class ZkSyncController {
             if (!dbUpdateSuccess) {
                 // Mark transaction as failed
                 tokenTransactionService.failTokenTransaction(tokenTransaction.getId());
-                return ResponseEntity.internalServerError().body(Map.of(
-                    "success", false,
-                    "error", "Failed to update database balances"
-                ));
+                throw new DatabaseUpdateException("Failed to update database balances");
             }
 
             log.info("Database updated successfully - deducted {} main points, added {} token balance for user: {}", 
@@ -195,10 +190,7 @@ public class ZkSyncController {
                 userPointTokenService.revertExchangeMainPointsToTokens(
                     googleId, MAIN_POINTS_TO_EXCHANGE, TOKEN_AMOUNT_WEI.longValue());
                 
-                return ResponseEntity.internalServerError().body(Map.of(
-                    "success", false,
-                    "error", "Blockchain transaction failed, changes rolled back: " + e.getMessage()
-                ));
+                throw new BlockchainTransactionException("Blockchain transaction failed, changes rolled back: " + e.getMessage(), e);
             }
 
             // Get updated balances for response
