@@ -1,5 +1,6 @@
 package com.blooming.blockchain.springbackend.admin.controller;
 
+import com.blooming.blockchain.springbackend.admin.dto.PointGrantResponse;
 import com.blooming.blockchain.springbackend.auth.jwt.JwtService;
 import com.blooming.blockchain.springbackend.exception.AuthenticationException;
 import com.blooming.blockchain.springbackend.exception.InvalidRequestException;
@@ -31,16 +32,10 @@ public class AdminController {
 
     // Grant points to user (admin only)
     @PostMapping("/grant-points")
-    public ResponseEntity<?> grantPoints(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+    public ResponseEntity<PointGrantResponse> grantPoints(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
         // Extract and validate admin user
         String adminGoogleId = extractGoogleIdFromRequest(httpRequest);
-
-        // For development/demo purposes, allow any authenticated user to grant points
-        // In production, you would uncomment the role check below:
-        // Byte roleId = extractRoleIdFromRequest(httpRequest);
-        // if (roleId == null || roleId != 1) {
-        //     throw new AuthenticationException("Admin role required");
-        // }
+        
 
         // Extract request parameters
         String userGoogleId = (String) request.get("userGoogleId");
@@ -87,16 +82,16 @@ public class AdminController {
             throw new RuntimeException("Failed to grant points - transaction creation failed");
         }
 
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "transaction", Map.of(
-                "id", transaction.getId(),
-                "amount", amount,
-                "pointType", pointType,
-                "status", TransactionStatusType.fromId(transaction.getTransactionStatusId()).getName()
-            ),
-            "message", "Points granted successfully"
-        ));
+        return ResponseEntity.ok(PointGrantResponse.builder()
+            .success(true)
+            .transaction(PointGrantResponse.TransactionInfo.builder()
+                .id(transaction.getId())
+                .amount(amount)
+                .pointType(pointType)
+                .status(TransactionStatusType.fromId(transaction.getTransactionStatusId()).getName())
+                .build())
+            .message("Points granted successfully")
+            .build());
     }
 
     // Helper method to extract Google ID from JWT token

@@ -6,6 +6,7 @@ import com.blooming.blockchain.springbackend.pointtransaction.repository.PointTr
 import com.blooming.blockchain.springbackend.pointtransaction.service.PointTransactionService;
 import com.blooming.blockchain.springbackend.pointtransaction.service.TokenTransactionService;
 import com.blooming.blockchain.springbackend.userdetail.service.UserPointTokenService;
+import com.blooming.blockchain.springbackend.zksync.dto.TokenExchangeResponse;
 import com.blooming.blockchain.springbackend.zksync.service.ZkSyncService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,81 +33,6 @@ public class ZkSyncController {
     private final PointTransactionService pointTransactionService;
     private final PointTransactionRepository pointTransactionRepository;
 
-    /**
-     * Test smart wallet creation (for testing without frontend)
-     * @param testEmail Test email for wallet creation
-     * @return Created wallet information
-     */
-    @PostMapping("/test/create-wallet")
-    public ResponseEntity<?> testCreateWallet(@RequestParam(defaultValue = "test@example.com") String testEmail) {
-        try {
-            log.info("Creating test smart wallet for email: {}", testEmail);
-            ZkSyncService.SmartWallet smartWallet = zkSyncService.createSmartWallet(testEmail);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("testEmail", smartWallet.getUserEmail());
-            response.put("smartWalletAddress", smartWallet.getAddress());
-            response.put("privateKeyPreview", smartWallet.getPrivateKey().substring(0, 8) + "...");
-            response.put("message", "Smart wallet created successfully for testing");
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Failed to create test smart wallet", e);
-            return ResponseEntity.internalServerError()
-                .body(Map.of("error", "Failed to create test smart wallet: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Test token minting (for testing without frontend)
-     * @param mintRequest Request containing wallet address, amount, and reason
-     * @return Token minting result with transaction hash
-     */
-    @PostMapping("/test/mint-tokens")
-    public ResponseEntity<?> testMintTokens(@RequestBody Map<String, Object> mintRequest) {
-        try {
-            String walletAddress = (String) mintRequest.get("walletAddress");
-            Object amountObj = mintRequest.get("amount");
-            String reason = (String) mintRequest.getOrDefault("reason", "Test token minting");
-
-            if (walletAddress == null || amountObj == null) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "error", "walletAddress and amount are required"
-                ));
-            }
-
-            BigInteger amount;
-            if (amountObj instanceof Number) {
-                amount = BigInteger.valueOf(((Number) amountObj).longValue());
-            } else {
-                amount = new BigInteger(amountObj.toString());
-            }
-
-            log.info("Test minting {} tokens to wallet: {} - Reason: {}", amount, walletAddress, reason);
-            
-            String txHash = zkSyncService.mintGovernanceTokens(walletAddress, amount, reason).join();
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("walletAddress", walletAddress);
-            response.put("amount", amount.toString());
-            response.put("reason", reason);
-            response.put("transactionHash", txHash);
-            response.put("explorerUrl", "https://sepolia.era.zksync.dev/tx/" + txHash);
-            response.put("message", "Tokens minted successfully");
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Failed to mint test tokens", e);
-            return ResponseEntity.internalServerError()
-                .body(Map.of(
-                    "success", false, 
-                    "error", "Failed to mint tokens: " + e.getMessage()
-                ));
-        }
-    }
 
     /**
      * Get paymaster status and statistics
@@ -279,21 +205,20 @@ public class ZkSyncController {
             Integer newMainPointBalance = userPointTokenService.getMainPointBalance(googleId);
             Long newTokenBalance = userPointTokenService.getTokenBalance(googleId);
 
-            // Return success response
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("mainPointsExchanged", MAIN_POINTS_TO_EXCHANGE);
-            response.put("tokensReceived", TOKENS_TO_RECEIVE);
-            response.put("walletAddress", smartWalletAddress);
-            response.put("transactionHash", txHash);
-            response.put("explorerUrl", "https://sepolia.era.zksync.dev/tx/" + txHash);
-            response.put("tokenTransactionId", tokenTransaction.getId());
-            response.put("newMainPointBalance", newMainPointBalance);
-            response.put("newTokenBalance", newTokenBalance);
-            response.put("newTokenBalanceFormatted", formatTokenBalance(BigInteger.valueOf(newTokenBalance)));
-            response.put("message", "Successfully exchanged 10 main points for 1 BLOOM token");
-
-            return ResponseEntity.ok(response);
+            // Return success response using builder pattern
+            return ResponseEntity.ok(TokenExchangeResponse.builder()
+                .success(true)
+                .mainPointsExchanged(MAIN_POINTS_TO_EXCHANGE)
+                .tokensReceived(TOKENS_TO_RECEIVE)
+                .walletAddress(smartWalletAddress)
+                .transactionHash(txHash)
+                .explorerUrl("https://sepolia.era.zksync.dev/tx/" + txHash)
+                .tokenTransactionId(tokenTransaction.getId())
+                .newMainPointBalance(newMainPointBalance)
+                .newTokenBalance(newTokenBalance)
+                .newTokenBalanceFormatted(formatTokenBalance(BigInteger.valueOf(newTokenBalance)))
+                .message("Successfully exchanged 10 main points for 1 BLOOM token")
+                .build());
             
         } catch (ExpiredJwtException e) {
             return ResponseEntity.status(401).body(Map.of("error", "Token expired"));
