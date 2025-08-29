@@ -3,25 +3,23 @@
  */
 
 /**
- * Format token balance from wei to human readable format
- * @param tokenBalanceWei Token balance in wei (e.g., 5000000000000000000)
- * @returns Formatted token amount (e.g., "5")
+ * Format token balance from integer token values to human readable format
+ * @param tokenBalance Token balance as integer (e.g., 12)
+ * @returns Formatted token amount (e.g., "12")
  */
-export function formatTokenBalance(tokenBalanceWei: number | string): string {
-  if (!tokenBalanceWei) return "0";
+export function formatTokenBalance(tokenBalance: number | string): string {
+  if (!tokenBalance) return "0";
   
-  const balance = typeof tokenBalanceWei === 'string' 
-    ? parseFloat(tokenBalanceWei) 
-    : tokenBalanceWei;
+  const balance = typeof tokenBalance === 'string' 
+    ? parseFloat(tokenBalance) 
+    : tokenBalance;
   
-  // Convert from wei (18 decimals) to tokens
-  const tokens = balance / Math.pow(10, 18);
-  
-  // Format to avoid scientific notation and unnecessary decimals
-  if (tokens >= 1) {
-    return tokens.toFixed(0); // Show whole numbers for >= 1 token
-  } else if (tokens > 0) {
-    return tokens.toFixed(4); // Show up to 4 decimals for fractional tokens
+  // Since backend now sends integer token values directly, no conversion needed
+  // Format to avoid unnecessary decimals
+  if (balance >= 1) {
+    return balance.toFixed(0); // Show whole numbers for >= 1 token
+  } else if (balance > 0) {
+    return balance.toFixed(4); // Show up to 4 decimals for fractional tokens
   } else {
     return "0";
   }

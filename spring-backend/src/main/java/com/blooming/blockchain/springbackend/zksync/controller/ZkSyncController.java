@@ -31,6 +31,11 @@ import java.util.Map;
 @Slf4j
 public class ZkSyncController {
 
+    // Constants for token exchange
+    private static final BigInteger TOKEN_DECIMALS = BigInteger.valueOf(10).pow(18);
+    private static final Integer EXCHANGE_RATE_POINTS = 10;
+    private static final Integer EXCHANGE_RATE_TOKENS = 1;
+
     private final ZkSyncService zkSyncService;
     private final JwtService jwtService;
     private final UserPointTokenService userPointTokenService;
@@ -120,11 +125,12 @@ public class ZkSyncController {
             }
 
             // Fixed exchange: 10 main points → 1 token
-            final Integer MAIN_POINTS_TO_EXCHANGE = 10;
-            final Integer TOKENS_TO_RECEIVE = 1;
-            final BigInteger TOKEN_AMOUNT_WEI = BigInteger.valueOf(1).multiply(BigInteger.valueOf(10).pow(18)); // 1 token = 1e18 wei
+            final Integer MAIN_POINTS_TO_EXCHANGE = EXCHANGE_RATE_POINTS;
+            final Integer TOKENS_TO_RECEIVE = EXCHANGE_RATE_TOKENS;
+            final BigInteger TOKEN_AMOUNT_WEI = BigInteger.valueOf(TOKENS_TO_RECEIVE).multiply(TOKEN_DECIMALS);
 
-            log.info("Exchange request - User: {}, Wallet: {}, 10 main points → 1 token", googleId, smartWalletAddress);
+            log.info("Exchange request - User: {}, Wallet: {}, {} main points → {} token", 
+                googleId, smartWalletAddress, MAIN_POINTS_TO_EXCHANGE, TOKENS_TO_RECEIVE);
 
             // Check user's current main point balance
             Integer currentMainPoints = userPointTokenService.getMainPointBalance(googleId);
@@ -132,17 +138,17 @@ public class ZkSyncController {
                 throw new InsufficientPointsException(currentMainPoints, MAIN_POINTS_TO_EXCHANGE);
             }
 
-            // Step 1: Create token transaction record
+            // Step 1: Create token transaction record (store tokens as integers in backend)
             TokenTransaction tokenTransaction = tokenTransactionService.createTokenTransaction(
                 googleId, 
                 MAIN_POINTS_TO_EXCHANGE, 
-                TOKEN_AMOUNT_WEI.longValue(),
-                "Exchange: 10 main points -> 1 BLOOM token"
+                TOKENS_TO_RECEIVE.longValue(),
+                "Exchange: " + MAIN_POINTS_TO_EXCHANGE + " main points -> " + TOKENS_TO_RECEIVE + " BLOOM token"
             );
 
-            // Step 2: Update database (deduct 10 main points, add 1 token worth in wei)
+            // Step 2: Update database (deduct 10 main points, add 1 token as integer)
             boolean dbUpdateSuccess = userPointTokenService.exchangeMainPointsToTokens(
-                googleId, MAIN_POINTS_TO_EXCHANGE, TOKEN_AMOUNT_WEI.longValue());
+                googleId, MAIN_POINTS_TO_EXCHANGE, TOKENS_TO_RECEIVE.longValue());
             
             if (!dbUpdateSuccess) {
                 // Mark transaction as failed
@@ -151,13 +157,13 @@ public class ZkSyncController {
             }
 
             log.info("Database updated successfully - deducted {} main points, added {} token balance for user: {}", 
-                MAIN_POINTS_TO_EXCHANGE, TOKEN_AMOUNT_WEI, googleId);
+                MAIN_POINTS_TO_EXCHANGE, TOKENS_TO_RECEIVE, googleId);
 
             // Step 2.5: Record point spending transaction (SOURCE_ID = 5 = MAIN_EXCHANGE)
             try {
                 com.blooming.blockchain.springbackend.pointtransaction.entity.PointTransaction pointTx = 
                     com.blooming.blockchain.springbackend.pointtransaction.entity.PointTransaction.createMainToTokenExchange(
-                        googleId, MAIN_POINTS_TO_EXCHANGE, "Exchange: 10 main points -> 1 BLOOM token");
+                        googleId, MAIN_POINTS_TO_EXCHANGE, "Exchange: " + MAIN_POINTS_TO_EXCHANGE + " main points -> " + TOKENS_TO_RECEIVE + " BLOOM token");
                 pointTx.confirmTransaction(); // Mark as confirmed since balance update succeeded
                 pointTransactionRepository.save(pointTx);
                 log.info("Recorded point spending transaction for user: {} - {} main points spent", googleId, MAIN_POINTS_TO_EXCHANGE);
@@ -172,7 +178,7 @@ public class ZkSyncController {
                 txHash = zkSyncService.mintGovernanceTokens(
                     smartWalletAddress, 
                     TOKEN_AMOUNT_WEI, 
-                    "Exchange: 10 main points -> 1 BLOOM token"
+                    "Exchange: " + MAIN_POINTS_TO_EXCHANGE + " main points -> " + TOKENS_TO_RECEIVE + " BLOOM token"
                 ).join();
                 
                 // Confirm the token transaction with blockchain hash
@@ -188,7 +194,7 @@ public class ZkSyncController {
                 
                 // Rollback DB balances: add back 10 main points and remove 1 token worth in wei
                 userPointTokenService.revertExchangeMainPointsToTokens(
-                    googleId, MAIN_POINTS_TO_EXCHANGE, TOKEN_AMOUNT_WEI.longValue());
+                    googleId, MAIN_POINTS_TO_EXCHANGE, TOKENS_TO_RECEIVE.longValue());
                 
                 throw new BlockchainTransactionException("Blockchain transaction failed, changes rolled back: " + e.getMessage(), e);
             }
@@ -209,7 +215,7 @@ public class ZkSyncController {
                 .newMainPointBalance(newMainPointBalance)
                 .newTokenBalance(newTokenBalance)
                 .newTokenBalanceFormatted(formatTokenBalance(BigInteger.valueOf(newTokenBalance)))
-                .message("Successfully exchanged 10 main points for 1 BLOOM token")
+                .message("Successfully exchanged " + MAIN_POINTS_TO_EXCHANGE + " main points for " + TOKENS_TO_RECEIVE + " BLOOM token")
                 .build());
             
         } catch (ExpiredJwtException e) {

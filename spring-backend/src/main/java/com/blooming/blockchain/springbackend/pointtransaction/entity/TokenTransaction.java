@@ -75,12 +75,11 @@ public class TokenTransaction {
     @PrePersist
     @PreUpdate
     private void validateExchangeRate() {
-        // Convert wei to tokens (divide by 10^18) for validation
-        long tokensInEther = tokensReceived / 1_000_000_000_000_000_000L;
-        if (mainPointsSpent != tokensInEther * 10) {
+        // Validate exchange rate: 10 main points = 1 token
+        if (mainPointsSpent != tokensReceived * 10) {
             throw new IllegalStateException(
                 String.format("Exchange rate must be 10:1 (main points:tokens). Got %d points for %d tokens", 
-                    mainPointsSpent, tokensInEther)
+                    mainPointsSpent, tokensReceived)
             );
         }
     }
