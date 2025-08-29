@@ -41,6 +41,8 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public class SmartContractProposalService {
 
+    private static final ZoneId KOREA_TIMEZONE = ZoneId.of("Asia/Seoul");
+    
     private final UserRepository userRepository;
     private final ZkSyncService zkSyncService;
     private final ZkSyncEraPaymasterService zkSyncEraPaymasterService;
@@ -106,8 +108,8 @@ public class SmartContractProposalService {
                 Web3j web3j = getWeb3jClient();
                 Credentials ownerCreds = getOwnerCredentials();
                 
-                // 마감시간을 Unix 타임스탬프로 변환 (프론트엔드에서 UTC로 전송됨)
-                long deadlineTimestamp = deadline.toEpochSecond(ZoneOffset.UTC);
+                // 마감시간을 Unix 타임스탬프로 변환 (프론트엔드에서 한국 시간으로 전송됨)
+                long deadlineTimestamp = deadline.atZone(KOREA_TIMEZONE).toEpochSecond();
                 BigInteger deadlineInSeconds = BigInteger.valueOf(deadlineTimestamp);
                 
                 // 기존 createProposal 함수 호출 (스마트 컨트랙트는 내부적으로 ID를 생성)
@@ -171,8 +173,8 @@ public class SmartContractProposalService {
                 Web3j web3j = getWeb3jClient();
                 Credentials ownerCreds = getOwnerCredentials();
                 
-                // 마감시간을 Unix 타임스탬프로 변환 (프론트엔드에서 UTC로 전송됨)
-                long deadlineTimestamp = deadline.toEpochSecond(ZoneOffset.UTC);
+                // 마감시간을 Unix 타임스탬프로 변환 (프론트엔드에서 한국 시간으로 전송됨)
+                long deadlineTimestamp = deadline.atZone(KOREA_TIMEZONE).toEpochSecond();
                 BigInteger deadlineInSeconds = BigInteger.valueOf(deadlineTimestamp);
                 
                 // createProposal 함수 호출 생성
