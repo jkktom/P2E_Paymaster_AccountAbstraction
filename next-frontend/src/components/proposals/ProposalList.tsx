@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
+import { formatDateForDisplay } from '@/utils/dateUtils';
 // Removed Web3Auth import - using backend voting instead
 
 interface Proposal {
@@ -11,7 +12,7 @@ interface Proposal {
   description: string;
   proposerAddress: string;
   proposerGoogleId: string;
-  deadline: string;
+  deadline: string | number;
   executed: boolean;
   canceled: boolean;
   createdAt: string;
@@ -129,13 +130,7 @@ const ProposalList: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateForDisplay(dateString);
   };
 
   const getStatusBadge = (proposal: Proposal) => {

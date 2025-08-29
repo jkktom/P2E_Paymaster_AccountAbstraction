@@ -27,6 +27,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -105,7 +106,7 @@ public class SmartContractProposalService {
                 Web3j web3j = getWeb3jClient();
                 Credentials ownerCreds = getOwnerCredentials();
                 
-                // 마감시간을 Unix 타임스탬프로 변환
+                // 마감시간을 Unix 타임스탬프로 변환 (프론트엔드에서 UTC로 전송됨)
                 long deadlineTimestamp = deadline.toEpochSecond(ZoneOffset.UTC);
                 BigInteger deadlineInSeconds = BigInteger.valueOf(deadlineTimestamp);
                 
@@ -170,7 +171,7 @@ public class SmartContractProposalService {
                 Web3j web3j = getWeb3jClient();
                 Credentials ownerCreds = getOwnerCredentials();
                 
-                // 마감시간을 Unix 타임스탬프로 변환
+                // 마감시간을 Unix 타임스탬프로 변환 (프론트엔드에서 UTC로 전송됨)
                 long deadlineTimestamp = deadline.toEpochSecond(ZoneOffset.UTC);
                 BigInteger deadlineInSeconds = BigInteger.valueOf(deadlineTimestamp);
                 

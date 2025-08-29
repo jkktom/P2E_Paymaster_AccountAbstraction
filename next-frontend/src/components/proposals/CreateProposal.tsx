@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@/hooks/useAuth';
+import { formatDateForBackend, addDaysToKoreaDate, getCurrentKoreaDate, formatDateForInput } from '@/utils/dateUtils';
 
 interface CreateProposalProps {
   onProposalCreated?: () => void;
@@ -19,18 +20,18 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-  // 최소 마감일 계산 (현재 시간 + 1시간)
+  // 최소 마감일 계산 (현재 한국 시간 + 1시간)
   const getMinDateTime = () => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1);
-    return now.toISOString().slice(0, 16);
+    const koreaDate = getCurrentKoreaDate();
+    koreaDate.setHours(koreaDate.getHours() + 1);
+    return formatDateForInput(koreaDate);
   };
 
-  // 최대 마감일 계산 (현재 시간 + 30일)
+  // 최대 마감일 계산 (현재 한국 시간 + 30일)
   const getMaxDateTime = () => {
-    const now = new Date();
-    now.setDate(now.getDate() + 30);
-    return now.toISOString().slice(0, 16);
+    const koreaDate = getCurrentKoreaDate();
+    const futureDate = addDaysToKoreaDate(koreaDate, 30);
+    return formatDateForInput(futureDate);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,8 +65,8 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
       setError(null);
       setSuccess(null);
 
-      // Format deadline for LocalDateTime (yyyy-MM-ddTHH:mm:ss)
-      const formattedDeadline = deadlineDate.toISOString().slice(0, 19);
+      // Convert Korean time to UTC for backend
+      const formattedDeadline = formatDateForBackend(deadlineDate);
       
       const proposalRequest = {
         description: description.trim(),
@@ -129,9 +130,9 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
   };
 
   const setQuickDeadline = (days: number) => {
-    const now = new Date();
-    now.setDate(now.getDate() + days);
-    setDeadline(now.toISOString().slice(0, 16));
+    const koreaDate = getCurrentKoreaDate();
+    const futureDate = addDaysToKoreaDate(koreaDate, days);
+    setDeadline(formatDateForInput(futureDate));
   };
 
   if (!user) {
@@ -202,7 +203,7 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
 
             <div>
               <label htmlFor="deadline" className="block text-xs font-medium text-gray-700 mb-1">
-                투표 마감일 *
+                투표 마감일 (한국 시간) *
               </label>
               
               {/* Quick deadline buttons */}
