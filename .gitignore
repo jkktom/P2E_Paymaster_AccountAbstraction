@@ -267,6 +267,9 @@ local-data/
 claudemds/
 paymaster-examples/
 
+# Backup folders with sensitive data
+P2E_Paymaster_AccountAbstraction-backup/
+
 # Ignore compiled smart contracts (we'll commit source only)
 contracts/artifacts/
 contracts/cache/

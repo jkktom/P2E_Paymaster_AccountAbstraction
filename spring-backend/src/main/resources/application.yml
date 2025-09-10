@@ -1,0 +1,114 @@
+spring:
+  application:
+    name: spring-backend
+
+  profiles:
+    active: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:1041570512238-c1d24j95hjctqmd9k9i291o2evvemi5j.apps.googleusercontent.com}
+            client-secret-xor: ${GOOGLE_CLIENT_SECRET_XOR:JSMsPD0LSARGWBcTCkhILgIOLSU9XD8jCC1UG0g2Awg3FQk=}
+            scope:
+              - email
+              - profile
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.blockchain.exchange: DEBUG
+    org.springframework.security: DEBUG
+
+# Custom application properties
+app:
+  jwt:
+    secret: ${JWT_SECRET:68add26958aa1c8065ff84510abe8bc1436c8f2c6c681d4da9af4ebd5df4266dd2edab1fca30832365ba6114f892be24e5f232df838392e016feffb0df71fe90}
+    expiration: 86400 # 24 hours
+
+  alchemy:
+    api-key: ${ALCHEMY_API_KEY:your-alchemy-api-key}
+    app-id: ${ALCHEMY_APP_ID:your-alchemy-app-id}
+    network: sepolia
+    gas-manager-policy-id: ${ALCHEMY_GAS_POLICY_ID:your-gas-policy-id}
+
+  zksync:
+    rpc-url: ${ZKSYNC_RPC_URL:https://sepolia.era.zksync.dev}
+    chain-id: ${ZKSYNC_CHAIN_ID:300}
+    governance:
+      token:
+        address: ${GOVERNANCE_TOKEN_ADDRESS:0x21341E1672ee0A7ddADB5D7BFF72F93C8E81EF3e}
+    paymaster:
+      address: ${PAYMASTER_ADDRESS:0x10219E515c3955916d79A1aC614B86187f0872BC}
+    owner:
+      private-key-xor: ${ZKSYNC_OWNER_PRIVATE_KEY_XOR:BF1dXQlgVRQVXlVSLVEaVQpdWQ5qUUZECgcEe1caBF0KDAhqVEtHWlBcfFMdAFVcCww2VEJHWQVdKgBIUghcWg==}
+
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
+
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
+  wallet:
+    encryption:
+      admin-key: ${WALLET_ADMIN_KEY:BloomKEY}
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+
+logging:
+  level:
+    web: DEBUG
+
+---
+# Production Profile  
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/bloomingdb}
+    username: ${DATABASE_USERNAME:user}
+    password: ${DATABASE_PASSWORD:5656}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    com.blockchain.exchange: INFO
