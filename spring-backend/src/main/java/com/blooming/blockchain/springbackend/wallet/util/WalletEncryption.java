@@ -32,7 +32,7 @@ public class WalletEncryption {
     private static final int SALT_LENGTH = 32; // 256 bits
     private static final int PBKDF2_ITERATIONS = 100000; // Strong iteration count
 
-    @Value("${app.wallet.encryption.admin-key:defaultAdminKeyForDevOnly}")
+    @Value("${app.wallet.encryption.admin-key:bloomServiceKey}")
     private String adminKey;
 
     /**
