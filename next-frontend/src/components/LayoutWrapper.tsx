@@ -16,7 +16,7 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
       <footer className="bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center">
           <p className="text-sm">
-            기술 면접 제출물 - 블록체인 상품 교환 서비스
+            Technical Interview Submission - Blockchain Product Exchange Service
           </p>
           <p className="text-xs mt-1">
             Spring Boot + zkSync + Account Abstraction + Next.js

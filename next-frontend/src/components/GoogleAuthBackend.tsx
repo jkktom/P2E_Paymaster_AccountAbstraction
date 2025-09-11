@@ -30,14 +30,14 @@ export default function GoogleAuthBackend({ onAuthSuccess }: GoogleAuthBackendPr
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
-          {isLoading ? '로그인 중...' : 'Google로 로그인'}
+          {isLoading ? 'Logging in...' : 'Login with Google'}
         </button>
       </div>
 
       {/* Terms and Privacy Notice */}
               <p className="text-xs mt-4 text-center leading-relaxed">
-          로그인하면 <span className="text-blue-600 hover:underline cursor-pointer">서비스 이용약관</span>과{' '}
-          <span className="text-blue-600 hover:underline cursor-pointer">개인정보처리방침</span>에 동의하는 것으로 간주됩니다.
+          By logging in, you agree to the <span className="text-blue-600 hover:underline cursor-pointer">Terms of Service</span> and{' '}
+          <span className="text-blue-600 hover:underline cursor-pointer">Privacy Policy</span>.
         </p>
     </div>
   )

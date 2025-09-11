@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "블루밍 블록체인 서비스",
-  description: "포인트 기반 블록체인 권한 및 투표 및 신청 서비스",
+  title: "Blooming Blockchain Service",
+  description: "Point-based blockchain governance and voting application service",
 };
 
 export default function RootLayout({

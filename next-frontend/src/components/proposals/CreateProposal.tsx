@@ -20,14 +20,14 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-  // 최소 마감일 계산 (현재 한국 시간 + 1시간)
+  // Calculate minimum deadline (current time + 1 hour)
   const getMinDateTime = () => {
     const koreaDate = getCurrentKoreaDate();
     koreaDate.setHours(koreaDate.getHours() + 1);
     return formatDateForInput(koreaDate);
   };
 
-  // 최대 마감일 계산 (현재 한국 시간 + 30일)
+  // Calculate maximum deadline (current time + 30 days)
   const getMaxDateTime = () => {
     const koreaDate = getCurrentKoreaDate();
     const futureDate = addDaysToKoreaDate(koreaDate, 30);
@@ -38,17 +38,17 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
     e.preventDefault();
     
     if (!user?.googleId) {
-      setError('제안을 생성하려면 로그인이 필요합니다.');
+      setError('Login required to create a proposal.');
       return;
     }
 
     if (description.trim().length === 0) {
-      setError('제안 설명을 입력해주세요.');
+      setError('Please enter a proposal description.');
       return;
     }
 
     if (!deadline) {
-      setError('마감일을 선택해주세요.');
+      setError('Please select a deadline.');
       return;
     }
 
@@ -56,7 +56,7 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
     const now = new Date();
     
     if (deadlineDate <= now) {
-      setError('마감일은 현재 시간보다 미래여야 합니다.');
+      setError('Deadline must be in the future.');
       return;
     }
 
@@ -88,24 +88,24 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
       });
 
       const createdProposal = response.data;
-      setSuccess(`제안이 성공적으로 생성되었습니다! (제안 #${createdProposal.blockchainProposalId})`);
+      setSuccess(`Proposal created successfully! (Proposal #${createdProposal.blockchainProposalId})`);
       
-      // 폼 초기화
+      // Reset form
       setDescription('');
       setDeadline('');
       setShowForm(false);
 
-      // 상위 컴포넌트에 알림
+      // Notify parent component
       if (onProposalCreated) {
         onProposalCreated();
       }
 
     } catch (error: any) {
-      console.error('❌ 제안 생성 중 오류 발생:', error);
+      console.error('❌ Error creating proposal:', error);
       console.error('❌ Error response data:', error.response?.data);
       console.error('❌ Error status:', error.response?.status);
       
-      let errorMessage = '제안 생성 중 오류가 발생했습니다.';
+      let errorMessage = 'An error occurred while creating the proposal.';
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.error) {
@@ -138,7 +138,7 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
   if (!user) {
     return (
       <div className="text-center py-6">
-        <p className="text-gray-500 text-sm">제안을 생성하려면 로그인이 필요합니다.</p>
+        <p className="text-gray-500 text-sm">Login required to create a proposal.</p>
       </div>
     );
   }
@@ -151,13 +151,13 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
           >
-            새 제안 생성
+            Create New Proposal
           </button>
         </div>
       ) : (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
           <div className="flex justify-between items-center mb-4">
-            <h4 className="text-md font-semibold text-gray-900">새 제안 생성</h4>
+            <h4 className="text-md font-semibold text-gray-900">Create New Proposal</h4>
             <button
               onClick={() => {
                 setShowForm(false);
@@ -184,26 +184,26 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label htmlFor="description" className="block text-xs font-medium text-gray-700 mb-1">
-                제안 설명 *
+                Proposal Description *
               </label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                placeholder="거버넌스 제안에 대한 상세한 설명을 입력하세요..."
+                placeholder="Enter a detailed description of your governance proposal..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
                 required
               />
               <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>자유롭게 작성하세요</span>
-                <span>{description.length}자</span>
+                <span>Write freely</span>
+                <span>{description.length} chars</span>
               </div>
             </div>
 
             <div>
               <label htmlFor="deadline" className="block text-xs font-medium text-gray-700 mb-1">
-                투표 마감일 (한국 시간) *
+                Voting Deadline (Korea Time) *
               </label>
               
               {/* Quick deadline buttons */}
@@ -213,14 +213,14 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
                   onClick={() => setQuickDeadline(1)}
                   className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
                 >
-                  1일 후
+                  1 Day Later
                 </button>
                 <button
                   type="button"
                   onClick={() => setQuickDeadline(7)}
                   className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
                 >
-                  1주일 후
+                  1 Week Later
                 </button>
               </div>
               
@@ -235,16 +235,16 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
                 required
               />
               <p className="text-xs text-gray-500 mt-1">
-                빠른 설정 버튼을 사용하거나 직접 날짜를 선택하세요
+                Use quick setup buttons or select date directly
               </p>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <h5 className="text-xs font-medium text-blue-900 mb-1">⚠️ 중요 안내</h5>
+              <h5 className="text-xs font-medium text-blue-900 mb-1">⚠️ Important Notice</h5>
               <ul className="text-xs text-blue-800 space-y-1">
-                <li>• 제안이 zkSync Era 블록체인에 기록됩니다</li>
-                <li>• 생성 후 제안 내용을 수정할 수 없습니다</li>
-                <li>• 가스비는 페이마스터를 통해 후원됩니다</li>
+                <li>• Proposal will be recorded on zkSync Era blockchain</li>
+                <li>• Proposal content cannot be modified after creation</li>
+                <li>• Gas fees are sponsored through paymaster</li>
               </ul>
             </div>
 
@@ -260,10 +260,10 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    생성 중...
+                    Creating...
                   </span>
                 ) : (
-                  '제안 생성'
+                  'Create Proposal'
                 )}
               </button>
               
@@ -273,7 +273,7 @@ const CreateProposal: React.FC<CreateProposalProps> = ({ onProposalCreated }) =>
                 disabled={isSubmitting}
                 className="px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
               >
-                초기화
+                Reset
               </button>
             </div>
           </form>

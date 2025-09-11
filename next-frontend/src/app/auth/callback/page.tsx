@@ -7,7 +7,7 @@ function AuthCallbackContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing')
-  const [message, setMessage] = useState('인증 처리 중...')
+  const [message, setMessage] = useState('Processing authentication...')
 
   useEffect(() => {
     console.log('🚀 AuthCallback component mounted')
@@ -23,7 +23,7 @@ function AuthCallbackContent() {
 
     if (error) {
       setStatus('error')
-      setMessage(`인증 실패: ${error}`)
+      setMessage(`Authentication failed: ${error}`)
       return
     }
 
@@ -48,7 +48,7 @@ function AuthCallbackContent() {
       }
       
       setStatus('success')
-      setMessage('로그인 성공! 홈페이지로 이동합니다...')
+      setMessage('Login successful! Redirecting to homepage...')
       
       // Force a page reload to trigger useAuth to pick up the new token
       setTimeout(() => {
@@ -59,7 +59,7 @@ function AuthCallbackContent() {
       // If no token in URL, this might be the OAuth redirect from backend
       // The backend should have handled the token already
       setStatus('success')
-      setMessage('로그인 성공! 홈페이지로 이동합니다...')
+      setMessage('Login successful! Redirecting to homepage...')
       
       setTimeout(() => {
         window.location.href = '/'
@@ -83,7 +83,7 @@ function AuthCallbackContent() {
         </div>
 
         <h1 className="text-xl font-semibold mb-4 text-gray-900">
-          Google 로그인
+          Google Login
         </h1>
 
         <p className="text-gray-600 mb-6">
@@ -95,7 +95,7 @@ function AuthCallbackContent() {
             onClick={() => router.push('/')}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            홈으로 돌아가기
+            Return to Home
           </button>
         )}
       </div>

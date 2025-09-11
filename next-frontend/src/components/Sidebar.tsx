@@ -64,19 +64,19 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
           {/* 1. POINTS Section */}
           <div className="space-y-1">
             <h3 className="font-medium text-orange-600 text-sm px-3 py-2 border-b border-orange-100">
-              🪙 포인트 (Points)
+              🪙 Points
             </h3>
             
             {/* Point Earning */}
             <div className="ml-2 space-y-1">
-              <p className="text-xs px-3 py-1">포인트 받기</p>
+              <p className="text-xs px-3 py-1">Earn Points</p>
               <a 
                 href="#earn-sub-10" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">🎁</span>
-                <span>서브포인트 +10 받기</span>
+                <span>Earn Sub Points +10</span>
               </a>
               <a 
                 href="#earn-sub-50" 
@@ -84,7 +84,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">🎁</span>
-                <span>서브포인트 +50 받기</span>
+                <span>Earn Sub Points +50</span>
               </a>
               <a 
                 href="#earn-main-5" 
@@ -92,33 +92,33 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">⭐</span>
-                <span>메인포인트 +5 받기</span>
+                <span>Earn Main Points +5</span>
               </a>
             </div>
 
             {/* Point Conversion */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs px-3 py-1">포인트 변환</p>
+              <p className="text-xs px-3 py-1">Point Conversion</p>
               <a 
                 href="#convert-sub-main" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">🔄</span>
-                <span>서브 → 메인 변환</span>
+                <span>Sub → Main Conversion</span>
               </a>
             </div>
 
             {/* Balance Display */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs px-3 py-1">내 잔액</p>
+              <p className="text-xs px-3 py-1">My Balance</p>
               <a 
                 href="#point-balance" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-orange-50 hover:text-orange-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">💰</span>
-                <span>포인트 잔액 확인</span>
+                <span>Check Point Balance</span>
               </a>
             </div>
           </div>
@@ -126,57 +126,57 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
           {/* 2. TOKEN Section */}
           <div className="space-y-1">
             <h3 className="font-medium text-green-600 text-sm px-3 py-2 border-b border-green-100">
-              🪙 토큰 (Token)
+              🪙 Token
             </h3>
             
             {/* Token Exchange */}
             <div className="ml-2 space-y-1">
-              <p className="text-xs px-3 py-1">토큰 교환 (가스리스)</p>
+              <p className="text-xs px-3 py-1">Token Exchange (Gasless)</p>
               <a 
                 href="#exchange-main-token" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">⚡</span>
-                <span>포인트 → 토큰 교환</span>
+                <span>Points → Token Exchange</span>
               </a>
             </div>
 
             {/* Token Balance */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs px-3 py-1">토큰 잔액</p>
+              <p className="text-xs px-3 py-1">Token Balance</p>
               <a 
                 href="#token-balance" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">💎</span>
-                <span>토큰보유현황</span>
+                <span>Token Holdings</span>
               </a>
             </div>
 
             {/* Wallet Info */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs px-3 py-1">지갑 정보</p>
+              <p className="text-xs px-3 py-1">Wallet Info</p>
               <a 
                 href="#wallet-info" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">💳</span>
-                <span>지갑 주소 확인</span>
+                <span>Check Wallet Address</span>
               </a>
             </div>
             {/* Vote */}
             <div className="ml-2 space-y-1 pt-2">
-              <p className="text-xs px-3 py-1">투표 참여  </p>
+              <p className="text-xs px-3 py-1">Vote Participation</p>
               <a 
                 href="#vote" 
                 onClick={() => setIsMobileOpen(false)}
                 className="flex items-center px-3 py-2 rounded-lg hover:bg-green-50 hover:text-green-700 transition-colors text-sm"
               >
                 <span className="text-base mr-3">📊</span>
-                <span>투표 참여</span>
+                <span>Participate in Voting</span>
               </a>
             </div>
           </div>
@@ -185,59 +185,59 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
           {isAuthenticated && user && (
             <div className="space-y-1">
               <h3 className="font-medium text-purple-600 text-sm px-3 py-2 border-b border-purple-100">
-                🗳️ 투표 (Vote)
+                🗳️ Vote
               </h3>
               
               {/* Voting Power */}
               <div className="ml-2 space-y-1">
-                <p className="text-xs px-3 py-1">투표 권한</p>
+                <p className="text-xs px-3 py-1">Voting Power</p>
                 <a 
                   href="#voting-power" 
                   onClick={() => setIsMobileOpen(false)}
                   className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
                 >
                   <span className="text-base mr-3">⚡</span>
-                  <span>투표 권한 확인</span>
+                  <span>Check Voting Power</span>
                 </a>
               </div>
 
               {/* Proposals */}
               <div className="ml-2 space-y-1 pt-2">
-                <p className="text-xs px-3 py-1">거버넌스 제안</p>
+                <p className="text-xs px-3 py-1">Governance Proposals</p>
                 <a 
                   href="#proposals" 
                   onClick={() => setIsMobileOpen(false)}
                   className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
                 >
                   <span className="text-base mr-3">📋</span>
-                  <span>제안 목록</span>
+                  <span>Proposal List</span>
                 </a>
               </div>
 
               {/* Voting Buttons */}
               <div className="ml-2 space-y-1 pt-2">
-                <p className="text-xs px-3 py-1">투표 참여 (가스리스)</p>
+                <p className="text-xs px-3 py-1">Vote Participation (Gasless)</p>
                 <a 
                   href="#vote-buttons" 
                   onClick={() => setIsMobileOpen(false)}
                   className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
                 >
                   <span className="text-base mr-3">✅</span>
-                  <span>찬성/반대 투표</span>
+                  <span>For/Against Voting</span>
                 </a>
               </div>
 
               {/* Create Proposal (Admin only) */}
               {user.roleId === 1 && (
                 <div className="ml-2 space-y-1 pt-2">
-                  <p className="text-xs px-3 py-1">관리자 기능</p>
+                  <p className="text-xs px-3 py-1">Admin Functions</p>
                   <a 
                     href="#create-proposal" 
                     onClick={() => setIsMobileOpen(false)}
                     className="flex items-center px-3 py-2 rounded-lg hover:bg-purple-50 hover:text-purple-700 transition-colors text-sm"
                   >
                     <span className="text-base mr-3">➕</span>
-                    <span>제안 생성</span>
+                    <span>Create Proposal</span>
                   </a>
                 </div>
               )}
@@ -262,7 +262,7 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                     user.roleId === 1 ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                   }`}>
-                    {user.roleId === 1 ? '관리자' : '사용자'}
+                    {user.roleId === 1 ? 'Admin' : 'User'}
                   </span>
                 </div>
               </div>
@@ -272,12 +272,12 @@ export default function Sidebar({ isMobileOpen, setIsMobileOpen }: SidebarProps)
         
         {!isAuthenticated && (
           <div className="mt-auto p-4 border-t bg-gray-50 text-center">
-            <p className="text-sm text-gray-600 mb-3">로그인이 필요합니다</p>
+            <p className="text-sm text-gray-600 mb-3">Login required</p>
             <button
               onClick={navigateToHome}
               className="text-sm text-blue-600 hover:text-blue-800 underline"
             >
-              로그인 페이지로 이동
+              Go to Login Page
             </button>
           </div>
         )}

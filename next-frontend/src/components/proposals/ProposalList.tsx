@@ -47,13 +47,13 @@ const ProposalList: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // 활성 제안들 가져오기 (인증 불필요)
+      // Get active proposals (no authentication required)
       const proposalsResponse = await axios.get(`${API_BASE_URL}/api/proposals/active`);
 
       const proposalsData = proposalsResponse.data;
       setProposals(proposalsData);
 
-      // 각 제안의 투표 통계 가져오기
+      // Get voting statistics for each proposal
       const statsPromises = proposalsData.map(async (proposal: Proposal) => {
         try {
           const statsResponse = await axios.get(
@@ -61,7 +61,7 @@ const ProposalList: React.FC = () => {
           );
           return { proposalId: proposal.id, stats: statsResponse.data };
         } catch (error) {
-          console.warn(`투표 통계를 가져올 수 없습니다. 제안 ID: ${proposal.id}`, error);
+          console.warn(`Could not fetch voting statistics. Proposal ID: ${proposal.id}`, error);
           return { proposalId: proposal.id, stats: { totalVoters: 0, forVoters: 0, againstVoters: 0 } };
         }
       });
@@ -74,8 +74,8 @@ const ProposalList: React.FC = () => {
 
       setVoteStats(statsMap);
     } catch (error) {
-      console.error('제안 목록을 가져오는 중 오류 발생:', error);
-      setError('제안 목록을 불러올 수 없습니다.');
+      console.error('Error fetching proposal list:', error);
+      setError('Could not load proposal list.');
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ const ProposalList: React.FC = () => {
 
   const handleVote = async (proposalId: number, support: boolean) => {
     if (!user?.googleId) {
-      alert('투표하려면 로그인이 필요합니다.');
+      alert('Login required to vote.');
       return;
     }
 
@@ -91,7 +91,7 @@ const ProposalList: React.FC = () => {
       setVotingProposal(proposalId);
       setError(null);
 
-      console.log('백엔드에서 투표 처리 중...');
+      console.log('Processing vote on backend...');
       const voteRequest = {
         proposalId,
         userGoogleId: user.googleId,
@@ -106,16 +106,16 @@ const ProposalList: React.FC = () => {
       });
 
       const voteResult = response.data;
-      console.log('투표 완료:', voteResult);
+      console.log('Vote completed:', voteResult);
 
-      alert(`${support ? '찬성' : '반대'} 투표가 완료되었습니다!\n트랜잭션: ${voteResult.txHash || 'N/A'}`);
+      alert(`${support ? 'For' : 'Against'} vote completed!\nTransaction: ${voteResult.txHash || 'N/A'}`);
       
-      // 투표 후 제안 목록과 통계 새로고침
+      // Refresh proposal list and statistics after voting
       await fetchProposals();
     } catch (error: any) {
-      console.error('투표 중 오류 발생:', error);
+      console.error('Error during voting:', error);
       
-      let errorMessage = '투표 처리 중 오류가 발생했습니다.';
+      let errorMessage = 'An error occurred while processing the vote.';
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.message) {
@@ -135,18 +135,18 @@ const ProposalList: React.FC = () => {
 
   const getStatusBadge = (proposal: Proposal) => {
     if (proposal.executed) {
-      return <span className="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">실행됨</span>;
+      return <span className="px-2 py-1 bg-green-100 text-green-800 text-sm rounded-full">Executed</span>;
     }
     if (proposal.canceled) {
-      return <span className="px-2 py-1 bg-red-100 text-red-800 text-sm rounded-full">취소됨</span>;
+      return <span className="px-2 py-1 bg-red-100 text-red-800 text-sm rounded-full">Canceled</span>;
     }
     if (proposal.isExpired) {
-      return <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">만료됨</span>;
+      return <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Expired</span>;
     }
     if (proposal.isActive) {
-      return <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">활성</span>;
+      return <span className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">Active</span>;
     }
-    return <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">비활성</span>;
+    return <span className="px-2 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">Inactive</span>;
   };
 
   const getVotePercentage = (forVotes: number, totalVotes: number) => {
@@ -177,8 +177,8 @@ const ProposalList: React.FC = () => {
 
       {proposals.length === 0 ? (
         <div className="text-center py-8">
-          <div className="text-gray-500">현재 활성 제안이 없습니다.</div>
-          <p className="text-gray-400 text-sm mt-1">새로운 제안을 생성해보세요!</p>
+          <div className="text-gray-500">No active proposals currently.</div>
+          <p className="text-gray-400 text-sm mt-1">Create a new proposal!</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -192,24 +192,24 @@ const ProposalList: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="text-md font-semibold text-gray-900">
-                        제안 #{proposal.blockchainProposalId}
+                        Proposal #{proposal.blockchainProposalId}
                       </h4>
                       {getStatusBadge(proposal)}
                     </div>
                     <p className="text-gray-700 text-sm leading-relaxed mb-2">{proposal.description}</p>
                     
                     <div className="text-xs text-gray-500 space-y-1">
-                      <p>제안자: {proposal.proposerAddress.slice(0, 6)}...{proposal.proposerAddress.slice(-4)}</p>
-                      <p>마감: {formatDate(proposal.deadline)}</p>
+                      <p>Proposer: {proposal.proposerAddress.slice(0, 6)}...{proposal.proposerAddress.slice(-4)}</p>
+                      <p>Deadline: {formatDate(proposal.deadline)}</p>
                     </div>
                   </div>
                 </div>
 
-                {/* 투표 통계 */}
+                {/* Voting Statistics */}
                 <div className="mb-3 p-3 bg-gray-50 rounded-lg">
                   <div className="flex justify-between text-xs mb-2">
-                    <span>총 투표자: {stats.totalVoters}명</span>
-                    <span>찬성률: {forPercentage}%</span>
+                    <span>Total Voters: {stats.totalVoters}</span>
+                    <span>For Rate: {forPercentage}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
@@ -218,12 +218,12 @@ const ProposalList: React.FC = () => {
                     ></div>
                   </div>
                   <div className="flex justify-between text-xs text-gray-600 mt-1">
-                    <span>찬성: {stats.forVoters}</span>
-                    <span>반대: {stats.againstVoters}</span>
+                    <span>For: {stats.forVoters}</span>
+                    <span>Against: {stats.againstVoters}</span>
                   </div>
                 </div>
 
-                {/* 투표 버튼 */}
+                {/* Voting Buttons */}
                 {proposal.canVote && user && (
                   <div className="flex gap-2">
                     <button
@@ -231,21 +231,21 @@ const ProposalList: React.FC = () => {
                       disabled={votingProposal === proposal.id}
                       className="flex-1 px-3 py-2 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      {votingProposal === proposal.id ? '처리 중...' : '찬성'}
+                      {votingProposal === proposal.id ? 'Processing...' : 'For'}
                     </button>
                     <button
                       onClick={() => handleVote(proposal.id, false)}
                       disabled={votingProposal === proposal.id}
                       className="flex-1 px-3 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      {votingProposal === proposal.id ? '처리 중...' : '반대'}
+                      {votingProposal === proposal.id ? 'Processing...' : 'Against'}
                     </button>
                   </div>
                 )}
 
                 {!proposal.canVote && (
                   <div className="text-center py-2 text-gray-500 text-xs">
-                    {proposal.isExpired ? '마감된 제안입니다' : '투표할 수 없는 제안입니다'}
+                    {proposal.isExpired ? 'This proposal has expired' : 'This proposal cannot be voted on'}
                   </div>
                 )}
               </div>

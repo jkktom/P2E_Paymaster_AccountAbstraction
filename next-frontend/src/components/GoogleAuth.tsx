@@ -24,7 +24,7 @@ export default function GoogleAuth({ onAuthSuccess }: GoogleAuthProps) {
   // Handle Google OAuth response
   const handleGoogleResponse = async (response: any) => {
     if (!response.credential) {
-      setError('구글 인증 정보를 받지 못했습니다')
+      setError('Failed to receive Google authentication information')
       return
     }
 
@@ -35,8 +35,8 @@ export default function GoogleAuth({ onAuthSuccess }: GoogleAuthProps) {
       const { user } = await authAPI.googleLogin(response.credential)
       onAuthSuccess(user)
     } catch (err: any) {
-      console.error('Google 로그인 실패:', err)
-      setError(err.response?.data?.message || '로그인에 실패했습니다')
+      console.error('Google login failed:', err)
+      setError(err.response?.data?.message || 'Login failed')
     } finally {
       setIsLoading(false)
     }
@@ -93,14 +93,14 @@ export default function GoogleAuth({ onAuthSuccess }: GoogleAuthProps) {
       {isLoading && (
         <div className="mt-4 text-center">
           <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm">로그인 중...</p>
+          <p className="mt-2 text-sm">Logging in...</p>
         </div>
       )}
 
       {/* Terms and Privacy Notice */}
       <p className="text-xs mt-4 text-center leading-relaxed">
-        로그인하면 <span className="text-blue-600 hover:underline cursor-pointer">서비스 이용약관</span>과{' '}
-        <span className="text-blue-600 hover:underline cursor-pointer">개인정보처리방침</span>에 동의하는 것으로 간주됩니다.
+        By logging in, you agree to the <span className="text-blue-600 hover:underline cursor-pointer">Terms of Service</span> and{' '}
+        <span className="text-blue-600 hover:underline cursor-pointer">Privacy Policy</span>.
       </p>
     </div>
   )

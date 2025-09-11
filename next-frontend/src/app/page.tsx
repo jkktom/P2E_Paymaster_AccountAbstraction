@@ -25,22 +25,22 @@ export default function Home() {
       <section className="text-center mb-16" id="hero">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-semibold mb-6 leading-tight">
-            블루밍 블록체인 서비스
+            Blooming Blockchain Service
           </h1>
           <p className="text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
-            zkSync 기술로 구현된 가스리스 거래와 거버넌스 투표를 경험해보세요.
+            Experience gasless transactions and governance voting powered by zkSync technology.
             <br />
-            계정 추상화로 더 간단하고 안전한 블록체인 서비스를 제공합니다.
+            We provide simpler and safer blockchain services through account abstraction.
           </p>
           
           {!isAuthenticated ? (
             <div className="card-facebook p-8 max-w-md mx-auto">
               <h2 className="text-2xl font-semibold mb-6">
-                서비스 시작하기
+                Get Started
               </h2>
               <p className="mb-8 text-sm leading-relaxed">
-                구글 계정으로 간편하게 로그인하고 포인트를 적립하고, 
-                거버넌스 토큰을 교환해보세요.
+                Easily log in with your Google account, earn points, 
+                and exchange governance tokens.
               </p>
               
               {/* Google Auth Component */}
@@ -49,7 +49,7 @@ export default function Home() {
           ) : (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-2xl mx-auto">
               <h3 className="text-lg font-semibold text-blue-800 mb-4">
-                환영합니다! 🎉
+                Welcome! 🎉
               </h3>
               
               {/* User Info Display */}
@@ -83,13 +83,13 @@ export default function Home() {
                     onClick={signOut}
                     className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
                   >
-                    로그아웃
+                    Logout
                   </button>
                 </div>
               </div>
               
               <p className="text-blue-600 text-sm">
-                이제 포인트 적립, 토큰 교환, 거버넌스 투표 등 모든 기능을 이용할 수 있습니다.
+                You can now use all features including point earning, token exchange, and governance voting.
               </p>
             </div>
           )}
@@ -99,31 +99,31 @@ export default function Home() {
       {/* Features Overview - Always Visible */}
       <section className="mb-12" id="features">
         <h3 className="text-2xl font-bold mb-6 text-center">
-          플랫폼 주요 기능
+          Platform Key Features
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="text-3xl mb-4">🪙</div>
-            <h4 className="text-xl font-semibold mb-2">포인트 시스템</h4>
+            <h4 className="text-xl font-semibold mb-2">Point System</h4>
             <p>
-              활동을 통해 서브포인트를 획득하고, 메인포인트로 전환한 후 
-              거버넌스 토큰과 10:1 비율로 교환할 수 있습니다.
+              Earn sub points through activities, convert them to main points, 
+              and exchange them for governance tokens at a 10:1 ratio.
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="text-3xl mb-4">⚡</div>
-            <h4 className="text-xl font-semibold mb-2">가스리스 거래</h4>
+            <h4 className="text-xl font-semibold mb-2">Gasless Transactions</h4>
             <p>
-              모든 블록체인 거래는 zkSync 페이마스터를 통해 후원됩니다. 
-              가스비 없이 모든 기능을 이용할 수 있습니다.
+              All blockchain transactions are sponsored through zkSync paymaster. 
+              You can use all features without gas fees.
             </p>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="text-3xl mb-4">🗳️</div>
-            <h4 className="text-xl font-semibold mb-2">거버넌스 투표</h4>
+            <h4 className="text-xl font-semibold mb-2">Governance Voting</h4>
             <p>
-              BLOOM 토큰으로 탈중앙화 거버넌스에 참여하세요. 
-              제안서를 생성하고 중요한 결정에 투표할 수 있습니다.
+              Participate in decentralized governance with BLOOM tokens. 
+              Create proposals and vote on important decisions.
             </p>
           </div>
         </div>
@@ -142,27 +142,27 @@ export default function Home() {
           {/* AA Wallet Address */}
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-md p-6" id="wallet-info">
-              <h3 className="text-lg font-semibold text-green-600 mb-4">💳 AA 지갑 주소</h3>
+              <h3 className="text-lg font-semibold text-green-600 mb-4">💳 AA Wallet Address</h3>
               {isAuthenticated && user?.smartWalletAddress ? (
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm mb-2">스마트 지갑 주소:</p>
+                  <p className="text-sm mb-2">Smart Wallet Address:</p>
                   <p className="font-mono text-sm bg-white p-3 rounded border break-all">
                     {user.smartWalletAddress}
                   </p>
                   <p className="text-xs mt-2">
-                    zkSync Account Abstraction으로 생성된 지갑입니다. 모든 거래가 가스리스로 처리됩니다.
+                    This wallet was created with zkSync Account Abstraction. All transactions are processed gaslessly.
                   </p>
                 </div>
               ) : isAuthenticated ? (
-                <p className="text-gray-500">지갑 생성 중...</p>
+                <p className="text-gray-500">Creating wallet...</p>
               ) : (
                 <div className="bg-gray-50 p-4 rounded-lg text-center">
-                  <p className="text-gray-500 mb-2">로그인하시면 스마트 지갑 주소를 확인할 수 있습니다</p>
+                  <p className="text-gray-500 mb-2">Log in to view your smart wallet address</p>
                   <button
                     onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })}
                     className="text-blue-600 hover:text-blue-700 text-sm underline"
                   >
-                    로그인하러 가기
+                    Go to Login
                   </button>
                 </div>
               )}
@@ -174,7 +174,7 @@ export default function Home() {
       {/* Governance Proposals Section - Always Show */}
       <section className="mb-12">
         <div className="bg-white rounded-lg shadow-md p-6" id="governance">
-          <h3 className="text-xl font-semibold text-purple-600 mb-6">🗳️ 거버넌스 제안 및 투표</h3>
+          <h3 className="text-xl font-semibold text-purple-600 mb-6">🗳️ Governance Proposals and Voting</h3>
           
           {/* Create Proposal */}
           <div className="mb-6">
@@ -183,7 +183,7 @@ export default function Home() {
           
           {/* Proposals List */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4">활성 제안 목록</h4>
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">Active Proposals List</h4>
             <ProposalList />
           </div>
         </div>
@@ -194,29 +194,29 @@ export default function Home() {
         <section className="mb-12" id="demo">
           <div className="bg-white rounded-lg shadow-md p-8">
             <h3 className="text-2xl font-semibold text-center mb-6">
-              시스템 아키텍처 데모
+              System Architecture Demo
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <h4 className="text-lg font-semibold mb-3 text-blue-700">백엔드 (Spring Boot)</h4>
+                <h4 className="text-lg font-semibold mb-3 text-blue-700">Backend (Spring Boot)</h4>
                 <ul className="text-sm space-y-2">
-                  <li>• Google OAuth 2.0 인증</li>
-                  <li>• JWT 토큰 관리</li>
-                  <li>• H2/PostgreSQL 데이터베이스 및 JPA</li>
-                  <li>• 거래 기록이 포함된 포인트 시스템</li>
-                  <li>• 역할 기반 접근 제어 (관리자/사용자)</li>
-                  <li>• 모든 작업을 위한 RESTful API</li>
+                  <li>• Google OAuth 2.0 Authentication</li>
+                  <li>• JWT Token Management</li>
+                  <li>• H2/PostgreSQL Database and JPA</li>
+                  <li>• Point System with Transaction Records</li>
+                  <li>• Role-based Access Control (Admin/User)</li>
+                  <li>• RESTful API for All Operations</li>
                 </ul>
               </div>
               <div>
-                <h4 className="text-lg font-semibold mb-3 text-green-700">블록체인 (zkSync)</h4>
+                <h4 className="text-lg font-semibold mb-3 text-green-700">Blockchain (zkSync)</h4>
                 <ul className="text-sm space-y-2">
-                  <li>• 투표 기능이 있는 ERC20 거버넌스 토큰</li>
-                  <li>• 페이마스터를 사용한 계정 추상화</li>
-                  <li>• 모든 사용자를 위한 가스리스 거래</li>
-                  <li>• zkSync 세폴리아 테스트넷 배포</li>
-                  <li>• OpenZeppelin 보안 표준</li>
-                  <li>• 탈중앙화 거버넌스 제안</li>
+                  <li>• ERC20 Governance Token with Voting Features</li>
+                  <li>• Account Abstraction using Paymaster</li>
+                  <li>• Gasless Transactions for All Users</li>
+                  <li>• zkSync Sepolia Testnet Deployment</li>
+                  <li>• OpenZeppelin Security Standards</li>
+                  <li>• Decentralized Governance Proposals</li>
                 </ul>
               </div>
             </div>
@@ -227,19 +227,19 @@ export default function Home() {
       {/* System Status - Always Visible */}
       <section className="mb-8" id="status">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-800 mb-4 text-center">시스템 상태</h3>
+          <h3 className="text-lg font-semibold text-blue-800 mb-4 text-center">System Status</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="text-center">
-              <p className="font-medium text-blue-700">백엔드 API</p>
-              <p className="text-blue-600">✅ Spring Boot 준비완료</p>
+              <p className="font-medium text-blue-700">Backend API</p>
+              <p className="text-blue-600">✅ Spring Boot Ready</p>
             </div>
             <div className="text-center">
-              <p className="font-medium text-blue-700">블록체인</p>
-              <p className="text-blue-600">✅ zkSync 세폴리아</p>
+              <p className="font-medium text-blue-700">Blockchain</p>
+              <p className="text-blue-600">✅ zkSync Sepolia</p>
             </div>
             <div className="text-center">
-              <p className="font-medium text-blue-700">스마트 컨트랙트</p>
-              <p className="text-blue-600">✅ 배포 및 자금조달 완료</p>
+              <p className="font-medium text-blue-700">Smart Contract</p>
+              <p className="text-blue-600">✅ Deployed and Funded</p>
             </div>
           </div>
         </div>

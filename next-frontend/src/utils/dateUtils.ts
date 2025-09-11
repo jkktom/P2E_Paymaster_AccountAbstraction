@@ -4,7 +4,7 @@
 
 import { format } from 'date-fns';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
-import { ko } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 
 const KOREA_TIMEZONE = 'Asia/Seoul';
 
@@ -39,11 +39,11 @@ export function formatDateForDisplay(dateString: string | number): string {
     }
     
     // Display as-is (database already stores Korean time)
-    return format(date, 'yyyy년 M월 d일 HH:mm', { locale: ko });
+    return format(date, 'MMM d, yyyy HH:mm', { locale: enUS });
     
   } catch (error) {
     console.error('Error formatting date:', dateString, error);
-    return '날짜 형식 오류';
+    return 'Date format error';
   }
 }
 

@@ -14,10 +14,10 @@ export default function Header() {
           {/* Title - Responsive */}
           <div className="min-w-0 flex-1">
             <h1 className="text-xl lg:text-2xl font-semibold">
-              블루밍 블록체인 서비스
+              Blooming Blockchain Service
             </h1>
             <p className="text-xs lg:text-sm text-gray-600 hidden sm:block">
-              zkSync Account Abstraction 기반 포인트 및 토큰 관리 서비스
+              Point and Token Management Service based on zkSync Account Abstraction
             </p>
           </div>
         </div>
@@ -27,17 +27,17 @@ export default function Header() {
           {/* Points Display - Always visible */}
           <div className="hidden md:flex items-center space-x-3 text-sm bg-gray-50 px-4 py-2 rounded-lg">
             <div className="flex items-center space-x-2">
-              <span className="text-blue-600 font-medium">메인:</span>
+              <span className="text-blue-600 font-medium">Main:</span>
               <span className="font-bold text-blue-800">{isAuthenticated ? (balance?.mainPoint || 0) : '-'}</span>
             </div>
             <div className="text-gray-300">|</div>
             <div className="flex items-center space-x-2">
-              <span className="text-green-600 font-medium">서브:</span>
+              <span className="text-green-600 font-medium">Sub:</span>
               <span className="font-bold text-green-800">{isAuthenticated ? (balance?.subPoint || 0) : '-'}</span>
             </div>
             <div className="text-gray-300">|</div>
             <div className="flex items-center space-x-2">
-              <span className="text-purple-600 font-medium">토큰:</span>
+              <span className="text-purple-600 font-medium">Token:</span>
               <span className="font-bold text-purple-800">{isAuthenticated ? formatTokenBalance(balance?.tokenBalance || 0) : '-'}</span>
             </div>
           </div>
@@ -70,7 +70,7 @@ export default function Header() {
                   <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                     user.roleId === 1 ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                   }`}>
-                    {user.roleId === 1 ? '관리자' : '사용자'}
+                    {user.roleId === 1 ? 'Admin' : 'User'}
                   </span>
                   {user.smartWalletAddress && (
                     <span className="text-xs text-gray-500 font-mono">
@@ -83,7 +83,7 @@ export default function Header() {
                 onClick={signOut}
                 className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium transition-colors"
               >
-                로그아웃
+                Logout
               </button>
             </div>
           ) : (
@@ -94,7 +94,7 @@ export default function Header() {
               }}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
             >
-              로그인
+              Login
             </button>
           )}
         </div>
